@@ -1,0 +1,452 @@
+{% comment %}
+  main-collection-singles.liquid
+  Plantilla específica para la colección de Singles
+{% endcomment %}
+
+<div class="page-width">
+  <div class="collection-container preventas-container">
+    {% comment %} COLUMNA IZQUIERDA: FILTROS SIMPLES {% endcomment %}
+    <div class="collection-sidebar" id="filterSidebar">
+      <div class="sidebar-header">
+        <h2 class="filter-title">Filtrar</h2>
+        <button class="sidebar-close" id="closeSidebar" aria-label="Cerrar filtros">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="CollectionFiltersForm" class="collection-filters-form">
+        {% comment %} Obtener datos de productos para filtros dinámicos {% endcomment %}
+        {% assign expansion_tags = blank %}
+        {% assign rareza_tags = blank %}
+
+        {% for product in collection.products %}
+          {% for tag in product.tags %}
+            {% if tag contains 'Expansion_' %}
+              {% unless expansion_tags contains tag %}
+                {% assign expansion_tags = expansion_tags | append: tag | append: ',' %}
+              {% endunless %}
+            {% endif %}
+
+            {% if tag contains 'Rareza_' %}
+              {% unless rareza_tags contains tag %}
+                {% assign rareza_tags = rareza_tags | append: tag | append: ',' %}
+              {% endunless %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+
+        {% comment %} Filtro por Disponibilidad {% endcomment %}
+        <div class="filter-group">
+          <h3 class="filter-group-title">Disponibilidad</h3>
+          <label class="filter-checkbox">
+            <input type="checkbox" name="filter_availability" value="available">
+            <span class="checkmark"></span>
+            Disponible
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" name="filter_availability" value="soldout">
+            <span class="checkmark"></span>
+            Agotado
+          </label>
+        </div>
+
+        {% comment %} Filtro por Rango de Precio – Slider único {% endcomment %}
+        {%- assign max_price_value = 0 -%}
+        {%- for p in collection.products -%}
+          {%- if p.price > max_price_value -%}
+            {%- assign max_price_value = p.price -%}
+          {%- endif -%}
+        {%- endfor -%}
+        <div class="filter-group price-range-group">
+          <h3 class="filter-group-title">Rango de Precio</h3>
+          <div class="price-range-wrapper">
+            <input
+              type="range"
+              id="priceMax"
+              name="price_max"
+              min="0"
+              max="{{ max_price_value }}"
+              value="{{ max_price_value }}"
+              step="1000"
+            >
+            <div class="price-range-values">
+              <span id="priceMinLabel">$0</span>
+              <span id="priceCurrentLabel">{{ max_price_value | money_without_trailing_zeros }}</span>
+              <span id="priceMaxLabel">{{ max_price_value | money_without_trailing_zeros }}</span>
+            </div>
+          </div>
+        </div>
+
+        {% comment %} Filtro por Expansión {% endcomment %}
+        {% assign expansion_array = expansion_tags | split: ',' | sort | uniq %}
+        {% if expansion_array.size > 0 %}
+          <div class="filter-group">
+            <h3 class="filter-group-title">Expansión</h3>
+            {% for tag in expansion_array %}
+              {% if tag != blank %}
+                {% assign expansion_name = tag | remove: 'Expansion_' %}
+                <label class="filter-checkbox">
+                  <input type="checkbox" name="filter_tags" value="{{ tag | handleize }}">
+                  <span class="checkmark"></span>
+                  {{ expansion_name }}
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% comment %} Filtro por Rareza {% endcomment %}
+        {% assign rareza_array = rareza_tags | split: ',' | sort | uniq %}
+        {% if rareza_array.size > 0 %}
+          <div class="filter-group">
+            <h3 class="filter-group-title">Rareza</h3>
+            {% for tag in rareza_array %}
+              {% if tag != blank %}
+                {% assign rareza_name = tag | remove: 'Rareza_' %}
+                <label class="filter-checkbox">
+                  <input type="checkbox" name="filter_tags" value="{{ tag | handleize }}">
+                  <span class="checkmark"></span>
+                  {{ rareza_name }}
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% comment %} Botones de acción {% endcomment %}
+        <div class="filter-actions">
+          <button type="button" class="filter-clear-btn" id="clearFilters">Limpiar filtros</button>
+        </div>
+      </form>
+    </div>
+
+    {% comment %} Overlay para móvil {% endcomment %}
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    {% comment %} Botón para abrir filtros en móvil {% endcomment %}
+    <button class="filter-toggle-btn" id="openFilters" aria-label="Abrir filtros">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 4H21V6H3V4ZM7 11H17V13H7V11ZM11 18H13V20H11V18Z" fill="currentColor"/>
+      </svg>
+      <span>Filtros</span>
+      <span class="filter-count" id="filterCount">0</span>
+    </button>
+
+    {% comment %} COLUMNA DERECHA: CONTENIDO PRINCIPAL {% endcomment %}
+    <div class="collection-main-content">
+      <div class="preventas-header">
+        <div class="header-title">
+          <div class="title-line-1">{{ section.settings.title_line_1 | default: 'CATÁLOGO DE' }}</div>
+          <div class="title-line-2">{{ section.settings.title_line_2 | default: 'SINGLES' }}</div>
+        </div>
+        <div class="mascot-container">
+          {% if section.settings.mascot_image %}
+            <img
+              src="{{ section.settings.mascot_image | image_url: width: 200 }}"
+              alt="{{ section.settings.mascot_image.alt | default: 'Mascota Singles' }}"
+              class="mascot-image"
+              width="200"
+              height="150"
+            >
+          {% else %}
+            <div class="mascot-character">
+              <div class="mascot-simple">
+                <div class="mascot-icon">🃏</div>
+                <div class="mascot-text">SINGLES</div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="product-grid preventas-grid">
+        {% for product in collection.products %}
+          {%- liquid
+            assign product_tags_string = ''
+            for tag in product.tags
+              assign handleized_tag = tag | handleize
+              if forloop.first == false
+                assign product_tags_string = product_tags_string | append: ','
+              endif
+              assign product_tags_string = product_tags_string | append: handleized_tag
+            endfor
+          -%}
+
+          <div
+            class="product-wrapper"
+            data-product-tags="{{ product_tags_string }}"
+            data-product-id="{{ product.id }}"
+            data-product-available="{% if product.available %}available{% else %}soldout{% endif %}"
+            data-product-price="{{ product.price }}"
+          >
+            {% render 'product-card-singles', product_card_product: product %}
+          </div>
+        {% endfor %}
+
+        <div class="empty-collection" style="display: none;">
+          <h3>No se encontraron productos</h3>
+          <p>Intenta ajustar los filtros o limpiarlos para ver más productos.</p>
+          <button type="button" class="filter-clear-btn" onclick="window.location.href = window.location.pathname">
+            Ver todos los productos
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% comment %}theme-check-disable AssetExists{% endcomment %}
+<script src="{{ 'collection-filters-singles.js' | asset_url }}" defer="defer"></script>
+{% comment %}theme-check-enable AssetExists{% endcomment %}
+
+<style>
+  .preventas-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 40px;
+    margin-top: 20px;
+  }
+
+  /* SIDEBAR FILTROS */
+  .collection-sidebar {
+    background: #2d1b69;
+    padding: 20px;
+    border-radius: 8px;
+    height: fit-content;
+    transition: transform 0.3s ease;
+  }
+
+  .collection-filters-form,
+  #CollectionFiltersForm {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+  }
+
+  .sidebar-close {
+    background: none;
+    border: none;
+    color: #fbbf24;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar-close:hover {
+    background: rgba(251, 191, 36, 0.2);
+    transform: rotate(90deg);
+  }
+
+  .filter-toggle-btn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #2d1b69;
+    color: #fbbf24;
+    border: 2px solid #fbbf24;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 20px rgba(45, 27, 105, 0.4);
+    transition: all 0.3s ease;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Acumin Variable Concept', var(--font-family-web), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .filter-toggle-btn:hover {
+    background: #fbbf24;
+    color: #2d1b69;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(45, 27, 105, 0.6);
+  }
+
+  .filter-toggle-btn svg { transition: transform 0.3s ease; }
+  .filter-toggle-btn:hover svg { transform: rotate(180deg); }
+
+  .filter-count {
+    background: #dc2626;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    min-width: 20px;
+  }
+
+  .filter-count:empty { display: none; }
+
+  /* Overlay */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .sidebar-overlay.active { opacity: 1; }
+
+  .filter-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid rgba(251, 191, 36, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filter-clear-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Acumin Variable Concept', var(--font-family-web), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: #fbbf24;
+    border: 2px solid #fbbf24;
+  }
+
+  .filter-clear-btn:hover { background: rgba(251, 191, 36, 0.1); transform: translateY(-1px); }
+
+  .filter-title { color: #fbbf24; font-size: 3.2rem; margin-bottom: 20px; font-weight: 700; font-family: 'Acumin Variable Concept', var(--font-family-web), sans-serif; }
+  .filter-group { margin-bottom: 30px; }
+  .filter-group-title { color: #fbbf24; font-size: 1.8rem; margin-bottom: 15px; font-weight: 400; border-bottom: 2px dotted #fbbf24; padding-bottom: 8px; font-family: 'Acumin Variable Concept', var(--font-family-web), sans-serif; }
+
+  .filter-checkbox { display:flex; align-items:center; margin-bottom:12px; cursor:pointer; color:white; font-weight:400; font-size:1.6rem; font-family: 'Acumin Variable Concept', var(--font-family-web), sans-serif; }
+  .filter-checkbox input[type='checkbox'] { margin-right:10px; width:20px; height:20px; background:transparent; border:2px solid #fbbf24; border-radius:6px; appearance:none; cursor:pointer; position:relative; transition:all 0.3s ease; outline:none!important; box-shadow:none!important; }
+  .filter-checkbox input[type='checkbox']:focus { box-shadow:0 0 0 3px rgba(251, 191, 36, 0.2)!important; }
+  .filter-checkbox input[type='checkbox']:hover { border-color:#f59e0b; box-shadow:0 0 8px rgba(251,191,36,0.3)!important; }
+  .filter-checkbox input[type='checkbox']:checked { background:#fbbf24; border-color:#fbbf24; }
+  .filter-checkbox input[type='checkbox']:checked::after { content:'✓'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#000; font-weight:bold; font-size:14px; }
+  .filter-checkbox .checkmark { display:none!important; }
+  .filter-checkbox:hover { color:#fbbf24; }
+
+  /* HEADER PRINCIPAL */
+  .preventas-header { background:transparent; border-radius:0; text-align:center; margin-bottom:0; margin-top:-45px; color:white; position:relative; display:flex; align-items:center; justify-content:space-between; }
+  .header-title { flex:1; text-align:left; }
+  .title-line-1, .title-line-2 { font-family:'Tanker', var(--font-family-titles), sans-serif; font-weight:900; color:#fbbf24; margin:0; line-height:1.1; text-shadow:2px 2px 4px rgba(0,0,0,0.3); text-transform:uppercase; letter-spacing:0.02em; }
+  .title-line-1 { font-size: {{ section.settings.title_line_1_size | default: 3.5 }}rem; }
+  .title-line-2 { font-size: {{ section.settings.title_line_2_size | default: 4 }}rem; }
+
+  .mascot-container { flex-shrink:0; margin-left:40px; }
+  .mascot-image { max-width:200px; height:auto; object-fit:contain; }
+  .mascot-character { position:relative; width:120px; height:120px; }
+  .mascot-simple { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; background:rgba(251,191,36,0.1); border:2px dashed #fbbf24; border-radius:12px; padding:10px; }
+  .mascot-icon { font-size:3rem; margin-bottom:8px; }
+  .mascot-text { color:#fbbf24; font-size:0.8rem; font-weight:700; text-align:center; letter-spacing:1px; }
+
+  /* GRID DE PRODUCTOS */
+  .preventas-grid { display:grid; grid-template-columns: repeat(4, 152px); gap:20px; justify-content:start; align-items:start; }
+  .product-wrapper { display:contents; }
+
+  /* Mensaje vacío */
+  .empty-collection { grid-column:1 / -1; text-align:center; padding:40px 20px; background:rgba(255,255,255,0.1); border-radius:15px; backdrop-filter:blur(10px); border:2px solid rgba(251,191,36,0.3); }
+  .empty-collection h3 { color:#fbbf24; font-size:2.4rem; margin-bottom:10px; font-family:'Acumin Variable Concept', var(--font-family-web), sans-serif; }
+  .empty-collection p { color:white; font-size:1.6rem; margin-bottom:20px; font-family:'Acumin Variable Concept', var(--font-family-web), sans-serif; }
+  .empty-collection .filter-clear-btn { background:#fbbf24; color:#2d1b69; border:none; padding:12px 24px; border-radius:8px; font-size:1.4rem; font-weight:600; cursor:pointer; transition:all 0.3s ease; font-family:'Acumin Variable Concept', var(--font-family-web),sans-serif; width:auto; }
+  .empty-collection .filter-clear-btn:hover { background:#f59e0b; transform:translateY(-1px); box-shadow:0 4px 12px rgba(251,191,36,0.3); }
+
+  @media (max-width: 1000px) {
+    .preventas-container { grid-template-columns:1fr; }
+    .collection-sidebar { position:fixed; top:0; left:-100%; width:320px; height:100vh; z-index:9999; overflow-y:auto; transform:translateX(-100%); border-radius:0; border-top-right-radius:15px; border-bottom-right-radius:15px; }
+    .collection-sidebar.active { left:0; transform:translateX(0); }
+    .sidebar-close { display:flex; }
+    .filter-toggle-btn { display:flex; }
+    .sidebar-overlay.active { display:block; }
+  }
+
+  /* SLIDER */
+  .price-range-wrapper { display:flex; flex-direction:column; gap:4px; }
+  .price-range-wrapper input[type='range'] { -webkit-appearance:none; width:100%; height:6px; background:#fbbf24; border-radius:4px; outline:none; cursor:pointer; }
+  .price-range-wrapper input[type='range']::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:24px; height:24px; {% if section.settings.slider_handle_icon %}background:url('{{ section.settings.slider_handle_icon | image_url: width: 32 }}') no-repeat center/contain; border:none;{% else %}background:#2d1b69; border:2px solid #fbbf24;{% endif %} border-radius:50%; }
+  .price-range-wrapper input[type='range']::-moz-range-thumb { width:24px; height:24px; {% if section.settings.slider_handle_icon %}background:url('{{ section.settings.slider_handle_icon | image_url: width: 32 }}') no-repeat center/contain; border:none;{% else %}background:#2d1b69; border:2px solid #fbbf24;{% endif %} border-radius:50%; cursor:pointer; }
+  .price-range-values { display:flex; justify-content:space-between; align-items:center; color:#fbbf24; font-size:1.4rem; font-weight:600; }
+</style>
+
+{% schema %}
+{
+  "name": "Singles",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Configuración Singles"
+    },
+    {
+      "type": "text",
+      "id": "title_line_1",
+      "label": "Primera línea del título",
+      "default": "CATÁLOGO DE"
+    },
+    {
+      "type": "text",
+      "id": "title_line_2",
+      "label": "Segunda línea del título",
+      "default": "SINGLES"
+    },
+    {
+      "type": "range",
+      "id": "title_line_1_size",
+      "min": 2,
+      "max": 8,
+      "step": 0.5,
+      "default": 3.5,
+      "label": "Tamaño primera línea (rem)"
+    },
+    {
+      "type": "range",
+      "id": "title_line_2_size",
+      "min": 2,
+      "max": 8,
+      "step": 0.5,
+      "default": 4,
+      "label": "Tamaño segunda línea (rem)"
+    },
+    {
+      "type": "image_picker",
+      "id": "mascot_image",
+      "label": "Imagen de la mascota"
+    },
+    {
+      "type": "image_picker",
+      "id": "slider_handle_icon",
+      "label": "Icono para el control del slider de precio (opcional)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Singles"
+    }
+  ]
+}
+{% endschema %}

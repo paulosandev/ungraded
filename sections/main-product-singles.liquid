@@ -1,0 +1,625 @@
+{{ 'section-main-product-singles.css' | asset_url | stylesheet_tag }}
+
+<div class="singles-product-container">
+  <div class="singles-product-wrapper">
+    <!-- Layout principal de dos columnas -->
+    <div class="singles-main-layout">
+      <!-- COLUMNA IZQUIERDA - Producto existente -->
+      <div class="singles-left-column">
+        <!-- Tarjeta principal del producto -->
+        <div class="singles-product-card">
+          <!-- Imagen del producto -->
+          <div class="singles-product-image">
+            {% if product.featured_image %}
+              <img
+                src="{{ product.featured_image | image_url: width: 400 }}"
+                alt="{{ product.featured_image.alt | default: product.title }}"
+                loading="lazy"
+                width="400"
+                height="600"
+              >
+            {% else %}
+              <div class="singles-product-placeholder">
+                <svg width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21,15 16,10 5,21"/>
+                </svg>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Información del producto -->
+          <div class="singles-product-info">
+            {%- for block in section.blocks -%}
+              {%- case block.type -%}
+                {%- when 'title' -%}
+                  <div class="singles-product-title" {{ block.shopify_attributes }}>
+                    <h1>{{ product.title | escape }}</h1>
+                  </div>
+
+                {%- when 'price' -%}
+                  <div class="singles-product-price" {{ block.shopify_attributes }}>
+                    <span class="price">{{ product.price | money }}</span>
+                  </div>
+
+                {%- when 'buy_buttons' -%}
+                  <div class="singles-product-buttons" {{ block.shopify_attributes }}>
+                    {%- form 'product', product, id: 'product-form-singles', class: 'form' -%}
+                      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+                      <button
+                        type="submit"
+                        name="add"
+                        class="singles-add-to-cart-btn"
+                        {% if product.selected_or_first_available_variant.available == false %}
+                          disabled
+                        {% endif %}
+                      >
+                        <span>AGREGAR AL CARRITO</span>
+                      </button>
+                    {%- endform -%}
+                  </div>
+
+                {%- when 'stock' -%}
+                  <div class="singles-product-stock" {{ block.shopify_attributes }}>
+                    <span class="stock-label">STOCK DISPONIBLE:</span>
+                    <span class="stock-value">
+                      {% if product.selected_or_first_available_variant.inventory_quantity > 0 %}
+                        {{
+                          product.selected_or_first_available_variant.inventory_quantity
+                          | prepend: '0'
+                          | slice: -2, 2
+                        }}
+                      {% else %}
+                        00
+                      {% endif %}
+                    </span>
+                  </div>
+
+                {%- when 'view_more_photos' -%}
+                  <div class="singles-view-more-photos" {{ block.shopify_attributes }}>
+                    <button class="view-more-photos-btn" onclick="openPhotoGallery()">VER MAS FOTOS</button>
+                  </div>
+              {%- endcase -%}
+            {%- endfor -%}
+          </div>
+        </div>
+
+        <!-- Mensaje de Ungraded -->
+        <div
+          class="ungraded-message"
+          style="
+            --message-size-desktop: {{ section.settings.message_size_desktop }}px;
+            --message-size-mobile: {{ section.settings.message_size_mobile }}px;
+          "
+        >
+          <div class="ungraded-message-content">
+            <div class="message-line-1">
+              {{ section.settings.message_line_1 | default: 'ESTÁS EN UNGRADED, AL MENOS' }}
+            </div>
+            <div class="message-line-2">
+              {{ section.settings.message_line_2 | default: 'QUE PAREZCA QUE SABES LO QUE HACES.' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Imagen de personajes -->
+        <div
+          class="ungraded-characters"
+          style="
+            --characters-width-desktop: {{ section.settings.characters_width_desktop }}px;
+            --characters-width-mobile: {{ section.settings.characters_width_mobile }}px;
+          "
+        >
+          {% if section.settings.characters_image %}
+            <img
+              src="{{ section.settings.characters_image | image_url: width: section.settings.characters_width_desktop }}"
+              alt="{{ section.settings.characters_image.alt | default: 'Personajes Ungraded' }}"
+              class="characters-image"
+              width="{{ section.settings.characters_width_desktop }}"
+              height="{{ section.settings.characters_width_desktop | times: 0.5 | round }}"
+            >
+          {% else %}
+            <div class="characters-placeholder">
+              <div class="character-icon">🎮</div>
+              <div class="character-icon">🎯</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA - Nueva información -->
+      <div class="singles-right-column">
+        <!-- Sección de detalles y descripción en dos columnas -->
+        <div class="singles-details-section">
+          <!-- Sub-columna izquierda: Detalles del producto -->
+          <div class="details-left-column">
+            <div class="product-details">
+              <h2 class="details-title">DETALLES DEL PRODUCTO</h2>
+              <div class="details-grid">
+                {% comment %} Extraer información de los tags del producto {% endcomment %}
+                {% assign expansion_value = 'N/A' %}
+                {% assign tipo_value = 'N/A' %}
+                {% assign rareza_value = 'N/A' %}
+                {% assign condicion_value = 'N/A' %}
+                {% assign idioma_value = 'N/A' %}
+
+                {% for tag in product.tags %}
+                  {% if tag contains 'Expansion_' %}
+                    {% assign expansion_value = tag | remove: 'Expansion_' %}
+                  {% elsif tag contains 'Tipo_' %}
+                    {% assign tipo_value = tag | remove: 'Tipo_' %}
+                  {% elsif tag contains 'Rareza_' %}
+                    {% assign rareza_value = tag | remove: 'Rareza_' %}
+                  {% elsif tag contains 'Condicion_' %}
+                    {% assign condicion_value = tag | remove: 'Condicion_' %}
+                  {% elsif tag contains 'Idioma_' %}
+                    {% assign idioma_value = tag | remove: 'Idioma_' %}
+                  {% endif %}
+                {% endfor %}
+
+                <div class="detail-item">
+                  <span class="detail-label">Expansión</span>
+                  <span class="detail-value">{{ expansion_value }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Tipo de carta</span>
+                  <span class="detail-value">{{ tipo_value }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Rareza</span>
+                  <span class="detail-value">{{ rareza_value }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Condición</span>
+                  <span class="detail-value">{{ condicion_value }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Idioma</span>
+                  <span class="detail-value">{{ idioma_value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sub-columna derecha: Descripción y opiniones -->
+          <div class="details-right-column">
+            <!-- Descripción -->
+            <div class="product-description">
+              <h2 class="description-title">DESCRIPCIÓN</h2>
+              <div class="description-content">
+                {% if product.description != blank %}
+                  {{ product.description }}
+                {% else %}
+                  {{
+                    section.settings.product_description
+                    | default: 'Esta carta ha roto más corazones debido a su rareza y la nostalgia de la icónica serie.'
+                  }}
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Sección de opiniones -->
+            <div class="product-reviews">
+              <h2 class="reviews-title">OPINIONES</h2>
+              <div class="star-rating">
+                <span class="star filled">★</span>
+                <span class="star filled">★</span>
+                <span class="star filled">★</span>
+                <span class="star filled">★</span>
+                <span class="star filled">★</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección - Te puede interesar -->
+        {% if section.settings.enable_related_products %}
+          <div class="related-products-section">
+            <h2 class="related-title">{{ section.settings.related_title | default: '¿TE PUEDE INTERESAR?' }}</h2>
+            <div class="related-products-grid">
+              {% comment %} Lógica simplificada para productos relacionados SIN DUPLICADOS {% endcomment %}
+              {% assign added_products = '' %}
+              {% assign products_count = 0 %}
+              {% assign max_products = section.settings.related_products_count | default: 4 %}
+
+              {% comment %} Determinar colección principal {% endcomment %}
+              {% if section.settings.related_collection %}
+                {% assign primary_collection = section.settings.related_collection %}
+              {% else %}
+                {% assign primary_collection = collections.singles %}
+              {% endif %}
+
+              {% comment %} Recopilar productos únicos de la colección principal {% endcomment %}
+              {% if primary_collection and primary_collection.products.size > 0 %}
+                {% for related_product in primary_collection.products limit: 12 %}
+                  {% if related_product.id != product.id
+                    and related_product.available
+                    and products_count < max_products
+                  %}
+                    {% assign product_id_check = related_product.id | append: ',' %}
+                    {% unless added_products contains product_id_check %}
+                      {% assign added_products = added_products | append: product_id_check %}
+                      {% assign products_count = products_count | plus: 1 %}
+                      <div class="related-product-item">
+                        {% if related_product.featured_image %}
+                          <a href="{{ related_product.url }}">
+                            <img
+                              src="{{ related_product.featured_image | image_url: width: 200 }}"
+                              alt="{{ related_product.featured_image.alt | default: related_product.title }}"
+                              class="related-product-image"
+                              width="200"
+                              height="280"
+                              loading="lazy"
+                            >
+                          </a>
+                        {% else %}
+                          <div class="related-product-placeholder">🎴</div>
+                        {% endif %}
+                        <div class="related-product-info">
+                          <h3 class="related-product-title">
+                            <a href="{{ related_product.url }}">{{ related_product.title | truncate: 25 }}</a>
+                          </h3>
+                          <p class="related-product-price">{{ related_product.price | money }}</p>
+                        </div>
+                      </div>
+                    {% endunless %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+
+              {% comment %} Llenar con productos adicionales si no hay suficientes {% endcomment %}
+              {% if products_count < max_products %}
+                {% for related_product in collections.all.products limit: 30 %}
+                  {% if related_product.id != product.id
+                    and related_product.available
+                    and products_count < max_products
+                  %}
+                    {% assign product_id_check = related_product.id | append: ',' %}
+                    {% unless added_products contains product_id_check %}
+                      {% assign added_products = added_products | append: product_id_check %}
+                      {% assign products_count = products_count | plus: 1 %}
+                      <div class="related-product-item">
+                        {% if related_product.featured_image %}
+                          <a href="{{ related_product.url }}">
+                            <img
+                              src="{{ related_product.featured_image | image_url: width: 200 }}"
+                              alt="{{ related_product.featured_image.alt | default: related_product.title }}"
+                              class="related-product-image"
+                              width="200"
+                              height="280"
+                              loading="lazy"
+                            >
+                          </a>
+                        {% else %}
+                          <div class="related-product-placeholder">🎴</div>
+                        {% endif %}
+                        <div class="related-product-info">
+                          <h3 class="related-product-title">
+                            <a href="{{ related_product.url }}">{{ related_product.title | truncate: 25 }}</a>
+                          </h3>
+                          <p class="related-product-price">{{ related_product.price | money }}</p>
+                        </div>
+                      </div>
+                    {% endunless %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+
+              {% comment %} Fallback: Si no hay productos disponibles, mostrar placeholders {% endcomment %}
+              {% if products_count == 0 %}
+                {% for i in (1..max_products) %}
+                  <div class="related-product-item">
+                    <div class="related-product-placeholder">🎴</div>
+                    <div class="related-product-info">
+                      <h3 class="related-product-title">Próximamente</h3>
+                      <p class="related-product-price">$0.00</p>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para galería de fotos (opcional) -->
+<div id="photoGalleryModal" class="photo-gallery-modal" style="display: none;">
+  <div class="photo-gallery-content">
+    <span class="close-gallery" onclick="closePhotoGallery()">&times;</span>
+    <div class="photo-gallery-images">
+      {% for image in product.images %}
+        <img
+          src="{{ image | image_url: width: 600 }}"
+          alt="{{ image.alt | default: product.title }}"
+          class="gallery-image"
+          width="600"
+          height="400"
+        >
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Funcionalidad del formulario de producto
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('product-form-singles');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('/cart/add.js', {
+          method: 'POST',
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            // Actualizar el carrito o mostrar notificación
+            window.location.href = '/cart';
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+      });
+    }
+  });
+
+  // Funcionalidad para galería de fotos
+  function openPhotoGallery() {
+    document.getElementById('photoGalleryModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePhotoGallery() {
+    document.getElementById('photoGalleryModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
+  // Cerrar modal al hacer clic fuera
+  window.onclick = function (event) {
+    const modal = document.getElementById('photoGalleryModal');
+    if (event.target == modal) {
+      closePhotoGallery();
+    }
+  };
+</script>
+
+{% schema %}
+{
+  "name": "Producto Singles",
+  "tag": "section",
+  "class": "section section-singles-product",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Mensaje Ungraded"
+    },
+    {
+      "type": "text",
+      "id": "message_line_1",
+      "label": "Primera línea del mensaje",
+      "default": "ESTÁS EN UNGRADED, AL MENOS"
+    },
+    {
+      "type": "text",
+      "id": "message_line_2",
+      "label": "Segunda línea del mensaje",
+      "default": "QUE PAREZCA QUE SABES LO QUE HACES."
+    },
+    {
+      "type": "range",
+      "id": "message_size_desktop",
+      "min": 12,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Tamaño del mensaje (Desktop)",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "message_size_mobile",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Tamaño del mensaje (Móvil)",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Imagen de personajes"
+    },
+    {
+      "type": "image_picker",
+      "id": "characters_image",
+      "label": "Imagen de personajes"
+    },
+    {
+      "type": "range",
+      "id": "characters_width_desktop",
+      "min": 200,
+      "max": 800,
+      "step": 50,
+      "unit": "px",
+      "label": "Ancho de imagen (Desktop)",
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "characters_width_mobile",
+      "min": 150,
+      "max": 400,
+      "step": 25,
+      "unit": "px",
+      "label": "Ancho de imagen (Móvil)",
+      "default": 300
+    },
+    {
+      "type": "header",
+      "content": "Detalles del producto"
+    },
+    {
+      "type": "text",
+      "id": "expansion",
+      "label": "Expansión",
+      "default": "SV - 151"
+    },
+    {
+      "type": "text",
+      "id": "card_type",
+      "label": "Tipo de carta",
+      "default": "SIR"
+    },
+    {
+      "type": "text",
+      "id": "rarity",
+      "label": "Rareza",
+      "default": "Rare"
+    },
+    {
+      "type": "text",
+      "id": "condition",
+      "label": "Condición",
+      "default": "NM"
+    },
+    {
+      "type": "text",
+      "id": "language",
+      "label": "Idioma",
+      "default": "EN"
+    },
+    {
+      "type": "textarea",
+      "id": "product_description",
+      "label": "Descripción del producto",
+      "default": "Esta carta ha roto más corazones debido a su rareza y la nostalgia de la icónica serie."
+    },
+    {
+      "type": "header",
+      "content": "Productos relacionados"
+    },
+    {
+      "type": "collection",
+      "id": "related_collection",
+      "label": "Colección principal para productos relacionados",
+      "info": "Si se selecciona, se priorizarán productos de esta colección. Si no, se usará 'Singles' por defecto."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_related_products",
+      "default": true,
+      "label": "Mostrar productos relacionados"
+    },
+    {
+      "type": "text",
+      "id": "related_title",
+      "label": "Título de la sección",
+      "default": "¿TE PUEDE INTERESAR?"
+    },
+    {
+      "type": "range",
+      "id": "related_products_count",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "label": "Número de productos a mostrar",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "prioritize_same_type",
+      "default": true,
+      "label": "Priorizar productos del mismo tipo (por tags)"
+    },
+    {
+      "type": "header",
+      "content": "Configuración general"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_info",
+      "default": false,
+      "label": "Información fija"
+    },
+    {
+      "type": "select",
+      "id": "media_size",
+      "options": [
+        {
+          "value": "small",
+          "label": "Pequeño"
+        },
+        {
+          "value": "medium",
+          "label": "Mediano"
+        },
+        {
+          "value": "large",
+          "label": "Grande"
+        }
+      ],
+      "default": "medium",
+      "label": "Tamaño de imagen"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding superior",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding inferior",
+      "default": 20
+    }
+  ],
+  "blocks": [
+    {
+      "type": "title",
+      "name": "Título",
+      "limit": 1
+    },
+    {
+      "type": "price",
+      "name": "Precio",
+      "limit": 1
+    },
+    {
+      "type": "buy_buttons",
+      "name": "Botones de compra",
+      "limit": 1
+    },
+    {
+      "type": "stock",
+      "name": "Stock",
+      "limit": 1
+    },
+    {
+      "type": "view_more_photos",
+      "name": "Ver más fotos",
+      "limit": 1
+    }
+  ],
+  "presets": [
+    {
+      "name": "Producto Singles"
+    }
+  ]
+}
+{% endschema %}

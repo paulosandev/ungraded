@@ -1,0 +1,84 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero_homepage_47aaTp": {
+      "type": "hero-homepage",
+      "name": "Hero Homepage",
+      "settings": {
+        "image": "shopify://shop_images/home-page-ungraded-personajes_aea1dace-ad16-49e4-bc75-f7677459f146.png",
+        "title": "COMPRA, VENDE Y VIVE EL TCG CÓMO NUNCA",
+        "button_text": "COMPRA AHORA",
+        "button_link": ""
+      }
+    },
+    "featured_categories_XtkwKf": {
+      "type": "featured-categories",
+      "blocks": {
+        "category_aacW7X": {
+          "type": "category",
+          "settings": {
+            "title": "PREVENTAS",
+            "image": "shopify://shop_images/preventas.png",
+            "link": "",
+            "background_color": "#b94ca5",
+            "text_color": "#ffffff",
+            "border_color": "#000000"
+          }
+        },
+        "category_f8YUmG": {
+          "type": "category",
+          "settings": {
+            "title": "Producto sellad0",
+            "image": "shopify://shop_images/producto-sellado.png",
+            "link": "",
+            "background_color": "#6d4f8f",
+            "text_color": "#ffffff",
+            "border_color": "#000000"
+          }
+        },
+        "category_hgtDTT": {
+          "type": "category",
+          "settings": {
+            "title": "Accesorios",
+            "image": "shopify://shop_images/accesorio-test.png",
+            "link": "",
+            "background_color": "#dca431",
+            "text_color": "#ffffff",
+            "border_color": "#000000"
+          }
+        },
+        "category_J3Frfm": {
+          "type": "category",
+          "settings": {
+            "title": "Singles",
+            "image": "shopify://shop_images/singles.png",
+            "link": "",
+            "background_color": "#2d818f",
+            "text_color": "#ffffff",
+            "border_color": "#000000"
+          }
+        }
+      },
+      "block_order": [
+        "category_aacW7X",
+        "category_f8YUmG",
+        "category_hgtDTT",
+        "category_J3Frfm"
+      ],
+      "name": "Bloques de Categorías",
+      "settings": {}
+    }
+  },
+  "order": [
+    "hero_homepage_47aaTp",
+    "featured_categories_XtkwKf"
+  ]
+}

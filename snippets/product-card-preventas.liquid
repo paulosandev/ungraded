@@ -1,0 +1,260 @@
+{% comment %}
+  product-card-preventas.liquid
+  Tarjeta de producto específica para Preventas
+{% endcomment %}
+
+{% assign product = product_card_product %}
+
+<div class="product-card preventas-card">
+  <!-- Sección superior con imagen (fondo naranjo) -->
+  <div class="product-card__image-section">
+    {% if product.featured_image %}
+      <img
+        src="{{ product.featured_image | image_url: width: 400 }}"
+        alt="{{ product.featured_image.alt | default: product.title }}"
+        class="product-card__image"
+        loading="lazy"
+        width="400"
+        height="200"
+      >
+    {% else %}
+      <div class="product-card__placeholder">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21,15 16,10 5,21"/>
+        </svg>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Sección inferior con información (fondo crema) -->
+  <div class="product-card__info-section">
+    {% comment %} Badge de Preventa movido arriba del título {% endcomment %}
+    {% if product.tags contains 'Preventa_Si' or product.metafields.custom.es_preventa == true %}
+      <div class="preventa-badge">PREVENTA</div>
+    {% endif %}
+
+    <h3 class="product-title">{{ product.title }}</h3>
+
+    {% comment %} Sistema profesional de fechas - Formato completo día/mes/año {% endcomment %}
+    {% assign release_date_display = '' %}
+
+    {% comment %} 1. Intentar obtener fecha desde metafield (método profesional) {% endcomment %}
+    {% if product.metafields.custom.fecha_lanzamiento != blank %}
+      {% assign fecha_raw = product.metafields.custom.fecha_lanzamiento %}
+
+      {% comment %} Debug: convertir a string si es necesario {% endcomment %}
+      {% assign fecha_string = fecha_raw | date: '%Y-%m-%d' %}
+
+      {% comment %} Extraer día, mes y año del formato YYYY-MM-DD {% endcomment %}
+      {% assign fecha_parts = fecha_string | split: '-' %}
+      {% if fecha_parts.size >= 3 %}
+        {% assign day = fecha_parts[2] %}
+        {% assign month = fecha_parts[1] %}
+        {% assign year = fecha_parts[0] %}
+        {% assign release_date_display = day | append: '/' | append: month | append: '/' | append: year %}
+      {% else %}
+        {% comment %} Si no es formato fecha, usar como texto {% endcomment %}
+        {% assign release_date_display = fecha_raw %}
+      {% endif %}
+
+      {% comment %} 2. Fallback a tag (método legacy) {% endcomment %}
+    {% else %}
+      {% for tag in product.tags %}
+        {% if tag contains 'FechaLanzamiento_' %}
+          {% assign release_date_display = tag | remove: 'FechaLanzamiento_' %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% comment %} Mostrar fecha con "Fecha estimada:" {% endcomment %}
+    {% if release_date_display != blank %}
+      <p class="release-date">Fecha estimada: {{ release_date_display }}</p>
+    {% else %}
+      <p class="release-date">Fecha por confirmar</p>
+    {% endif %}
+
+    <div class="product-price">{{ product.price | money }} MXN</div>
+
+    <a href="{{ product.url }}" class="ver-mas-btn">Ver más</a>
+  </div>
+</div>
+
+<style>
+  .preventas-card {
+    background: transparent;
+    border: 4px solid #000;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    /* Mantener relación de aspecto compacta 152x258px */
+    width: 152px;
+    height: 258px;
+    margin: 0 auto;
+    flex-shrink: 0;
+  }
+
+  .preventas-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Sección superior - Imagen con fondo naranja */
+  .product-card__image-section {
+    background: linear-gradient(135deg, #ff9500 0%, #ff7b00 100%);
+    position: relative;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .product-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .preventas-card:hover .product-card__image {
+    transform: scale(1.05);
+  }
+
+  .product-card__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.3);
+  }
+
+  /* Sección inferior - Información con fondo crema */
+  .product-card__info-section {
+    background: #ffeeb8;
+    padding: 10px;
+    color: #000;
+    position: relative;
+    height: 158px; /* 258px total - 100px imagen = 158px */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Badge de Preventa */
+  .preventa-badge {
+    background: #22c55e;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    margin-bottom: 4px;
+    box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
+    align-self: flex-start;
+  }
+
+  .product-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin: 0;
+    color: #000;
+    line-height: 1.1;
+    font-family: 'Acumin Variable Concept', var(--font-family-web), -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      Roboto, Helvetica, Arial, sans-serif;
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .release-date {
+    font-size: 0.75rem;
+    color: #dc2626;
+    margin: 2px 0;
+    font-weight: 500;
+    font-family: 'Acumin Variable Concept', var(--font-family-web), -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .product-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000;
+    margin: 2px 0;
+    font-family: 'Acumin Variable Concept', var(--font-family-web), -apple-system, BlinkMacSystemFont, 'Segoe UI';
+  }
+
+  .ver-mas-btn {
+    display: inline-block;
+    background: transparent;
+    color: #000;
+    padding: 0;
+    border: none;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    align-self: flex-end;
+    text-align: right;
+    font-family: 'Acumin Variable Concept', var(--font-family-web), -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .ver-mas-btn:hover {
+    color: #666;
+    text-decoration: none;
+  }
+
+  /* Responsive - Solo ajustes menores para mantener la compacidad */
+  @media (max-width: 768px) {
+    .preventas-card {
+      border-width: 3px;
+      border-radius: 15px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .preventas-card {
+      border-width: 2px;
+      border-radius: 12px;
+    }
+
+    .product-title {
+      font-size: 0.85rem;
+    }
+
+    .product-price {
+      font-size: 0.95rem;
+    }
+
+    .release-date {
+      font-size: 0.7rem;
+    }
+
+    .preventa-badge {
+      font-size: 0.55rem;
+      padding: 2px 6px;
+    }
+
+    .ver-mas-btn {
+      font-size: 0.85rem;
+    }
+  }
+</style>
+
+<script>
+  function notifyWhenAvailable(productId) {
+    // Aquí puedes implementar la lógica para notificaciones
+    alert('Te notificaremos cuando este producto esté disponible para reserva.');
+  }
+</script>

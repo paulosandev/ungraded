@@ -1,0 +1,133 @@
+{% comment %}
+  Sistema de nubes de fondo personalizables mejorado
+  Incluye múltiples configuraciones para apariencia y comportamiento
+{% endcomment %}
+
+{% if settings.enable_background_clouds %}
+  <div
+    class="background-clouds-container"
+    data-cloud-count="{{ settings.cloud_count | default: 8 }}"
+    data-animation-speed="{{ settings.animation_speed | default: 30 }}"
+    data-cloud-opacity="{{ settings.cloud_opacity | default: 20 }}"
+    data-cloud-size="{{ settings.cloud_size_scale | default: 120 }}"
+    data-cloud-blur="{{ settings.cloud_blur | default: 2 }}"
+    data-cloud-density="{{ settings.cloud_density | default: 'normal' }}"
+    data-cloud-style="{{ settings.cloud_style | default: 'light' }}"
+    {% if settings.custom_cloud_color != blank %}
+      data-custom-color="{{ settings.custom_cloud_color }}"
+    {% endif %}
+  ></div>
+
+  <style>
+    /* Variables CSS dinámicas para las nubes */
+    :root {
+      --cloud-count: {{ settings.cloud_count | default: 8 }};
+      --animation-duration: {{ settings.animation_speed | default: 30 }}s;
+      --cloud-opacity: {{ settings.cloud_opacity | default: 20 | times: 0.01 }};
+      --cloud-size-scale: {{ settings.cloud_size_scale | default: 120 | times: 0.01 }};
+      --cloud-blur: {{ settings.cloud_blur | default: 2 }}px;
+      {% if settings.custom_cloud_color != blank %}
+      --cloud-color: {{ settings.custom_cloud_color }};
+      {% else %}
+        {% case settings.cloud_style %}
+          {% when 'dark' %}
+            --cloud-color: rgba(60, 60, 60, var(--cloud-opacity));
+          {% when 'purple' %}
+            --cloud-color: rgba(147, 112, 219, var(--cloud-opacity));
+          {% when 'blue' %}
+            --cloud-color: rgba(135, 206, 235, var(--cloud-opacity));
+          {% else %}
+            --cloud-color: rgba(255, 255, 255, var(--cloud-opacity));
+        {% endcase %}
+      {% endif %}
+
+      {% comment %} Configuración de densidad {% endcomment %}
+      {% case settings.cloud_density %}
+        {% when 'sparse' %}
+          --cloud-vertical-spacing: 25%;
+          --cloud-min-top: 5%;
+          --cloud-max-top: 70%;
+        {% when 'dense' %}
+          --cloud-vertical-spacing: 8%;
+          --cloud-min-top: 0%;
+          --cloud-max-top: 85%;
+        {% else %}
+          --cloud-vertical-spacing: 15%;
+          --cloud-min-top: 2%;
+          --cloud-max-top: 75%;
+      {% endcase %}
+    }
+
+    /* Estilos actualizados para las nubes */
+    .background-clouds-container .cloud {
+      transform: scale(var(--cloud-size-scale));
+      filter: blur(var(--cloud-blur));
+      background: var(--cloud-color);
+      animation-duration: var(--animation-duration);
+    }
+
+    /* Distribución de nubes según densidad */
+    {% for i in (1..12) %}
+      .background-clouds-container .cloud:nth-child({{ i }}) {
+        {% case settings.cloud_density %}
+          {% when 'sparse' %}
+            top: {{ i | times: 25 | modulo: 70 | plus: 5 }}%;
+          {% when 'dense' %}
+            top: {{ i | times: 8 | modulo: 85 }}%;
+          {% else %}
+            top: {{ i | times: 15 | modulo: 75 | plus: 2 }}%;
+        {% endcase %}
+        animation-delay: -{{ i | times: 3 }}s;
+      }
+    {% endfor %}
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const container = document.querySelector('.background-clouds-container');
+      if (!container) return;
+
+      const cloudCount = parseInt(container.dataset.cloudCount) || 8;
+      const cloudStyle = container.dataset.cloudStyle || 'light';
+      const customColor = container.dataset.customColor;
+
+      // Limpiar nubes existentes
+      container.innerHTML = '';
+
+      // Generar nubes dinámicamente
+      for (let i = 0; i < cloudCount; i++) {
+        const cloud = document.createElement('div');
+        cloud.className = `cloud cloud--${getRandomSize()}`;
+
+        // Aplicar color personalizado si está definido
+        if (customColor) {
+          cloud.style.setProperty('--cloud-color', customColor);
+        }
+
+        // Posicionamiento aleatorio mejorado
+        const delay = Math.random() * -30;
+        const duration = 25 + Math.random() * 15; // Variación en velocidad
+
+        cloud.style.animationDelay = `${delay}s`;
+        cloud.style.animationDuration = `${duration}s`;
+
+        container.appendChild(cloud);
+      }
+
+      function getRandomSize() {
+        const sizes = ['small', 'medium', 'large'];
+        const weights = [0.4, 0.4, 0.2]; // Más nubes pequeñas y medianas
+        const random = Math.random();
+        let weightSum = 0;
+
+        for (let i = 0; i < sizes.length; i++) {
+          weightSum += weights[i];
+          if (random <= weightSum) {
+            return sizes[i];
+          }
+        }
+        return 'medium';
+      }
+    });
+  </script>
+{% endif %}

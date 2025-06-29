@@ -1,0 +1,62 @@
+{% comment %}
+  product-card-ungraded.liquid
+  Muestra una tarjeta de producto individual en la cuadrícula de colección.
+{% endcomment %}
+
+<a href="{{ product_card_product.url | within: collection }}" class="product-card">
+  <div class="product-card__image-wrapper">
+    <img
+      src="{{ product_card_product.featured_image | image_url: width: 400 }}"
+      alt="{{ product_card_product.featured_image.alt | escape }}"
+      width="400"
+      height="400"
+      loading="lazy"
+    >
+    {% if product_card_product.tags contains 'Status_Preventa' %}
+      <span class="product-card__badge">PREVENTA</span>
+    {% endif %}
+  </div>
+  <div class="product-card__info">
+    <div class="product-card__title">{{ product_card_product.title }}</div>
+    <div class="product-card__price">{{ product_card_product.price | money }}</div>
+  </div>
+</a>
+
+<style>
+  .product-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #4a044e; /* Púrpura oscuro */
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #2e1040; /* Púrpura de fondo */
+  }
+  .product-card__image-wrapper {
+    position: relative;
+  }
+  .product-card__badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background-color: #0e7490; /* Cyan */
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+  }
+  .product-card img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+  }
+  .product-card__info {
+    padding: 15px;
+  }
+  .product-card__title {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+</style>

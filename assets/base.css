@@ -1,0 +1,1663 @@
+/* ==========================================================================
+   1. Carga de Fuentes Personalizadas
+   ========================================================================== */
+   @font-face {
+    font-family: 'Tanker';
+    /* El formato 'woff' es excelente para la web. */
+    src: url('Tanker.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Troylinesans-Regular';
+    /* TTF es compatible, pero WOFF/WOFF2 es preferible para la web. */
+    src: url('TroylineSans.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Teco';
+    src: url('Teko.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Acumin Variable Concept';
+    src: url('AcuminVariableConcept.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  /* ==========================================================================
+     2. Variables Globales del Tema (Colores y Tipografía)
+     ========================================================================== */
+  :root {
+    /* Paleta de Colores (Extraída de tus diseños) */
+    --color-background: #624289;       /* Púrpura principal del fondo */
+    --color-accent-yellow: #f3b30f;      /* Amarillo del logo y botones */
+    --color-accent-cyan: #3DD1E7;         /* Cyan del bloque "SINGLES" */
+    --color-accent-magenta: #E34FE3;      /* Magenta del bloque "PREVENTAS" */
+    --color-text-light: #FFFFFF;
+    --color-text-dark: #212121;
+    --color-border: rgba(255, 255, 255, 0.2); /* Para separadores sutiles */
+  
+    /* Variables dinámicas del Header (conectadas con Shopify settings) */
+    --header-logo-height-desktop: {{ settings.logo_height_desktop | default: 120 }}px;
+    --header-logo-height-tablet: {{ settings.logo_height_tablet | default: 80 }}px;
+    --header-logo-height-mobile: {{ settings.logo_height_mobile | default: 60 }}px;
+    --header-logo-text-size-desktop: {{ settings.logo_text_size_desktop | default: 2.0 }}rem;
+    --header-logo-text-size-mobile: {{ settings.logo_text_size_mobile | default: 1.6 }}rem;
+    
+    --header-icons-size: {{ settings.header_icons_size | default: 40 }}px;
+    --header-icons-spacing: {{ settings.header_icons_spacing | default: 1.0 }}rem;
+    --header-icons-background-color: {{ settings.header_icons_background_color | default: '#f3b30f' }};
+    --header-icons-color: {{ settings.header_icons_color | default: '#212121' }};
+    --header-icons-border-radius: {{ settings.header_icons_border_radius | default: 50 }}%;
+    --header-icons-hover-scale: {{ settings.header_icons_hover_scale | default: 1.1 }};
+    
+    --header-padding-vertical: {{ settings.header_padding_vertical | default: 1.0 }}rem;
+    --header-padding-horizontal: {{ settings.header_padding_horizontal | default: 1.5 }}rem;
+    --header-alignment: {{ settings.header_alignment | default: 'space-between' }};
+    
+    --hamburger-size: {{ settings.hamburger_size | default: 30 }}px;
+    --hamburger-line-thickness: {{ settings.hamburger_line_thickness | default: 3 }}px;
+    --hamburger-color: {{ settings.hamburger_color | default: '#f3b30f' }};
+    
+    --search-bar-max-width: {{ settings.search_bar_max_width | default: 500 }}px;
+    --search-bar-border-radius: {{ settings.search_bar_border_radius | default: 25 }}px;
+    --search-bar-background: {{ settings.search_bar_background | default: '#ffffff' }};
+    --search-bar-border-color: {{ settings.search_bar_border_color | default: '#f3b30f' }};
+    --search-bar-border-thickness: {{ settings.search_bar_border_thickness | default: 2 }}px;
+    
+    --header-shadow-opacity: {{ settings.header_shadow_opacity | default: 10 }}%;
+  
+    /* Familias de Fuentes (Según Brand Kit pág. 9) */
+    --font-family-titles: 'Tanker', sans-serif;
+    --font-family-subtitles: 'Troylinesans-Regular', sans-serif;
+    --font-family-textos: 'Teco', sans-serif;
+    --font-family-web: 'Acumin Variable Concept', sans-serif;
+  
+    /* Otros estilos base */
+    --base-border-radius: 12px;
+    --page-width: 1200px;
+    --page-padding: 2rem;
+  }
+  
+  /* ==========================================================================
+     3. Estilos Base Aplicados
+     ========================================================================== */
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-light);
+    font-family: var(--font-family-web); /* Fuente base para párrafos y texto general */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-titles); /* Títulos con Tanker */
+    color: var(--color-accent-yellow);
+    margin: 0 0 1rem 0;
+    line-height: 1.2;
+  }
+  
+  p {
+    font-family: var(--font-family-textos); /* Textos/párrafos con Teco */
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  
+  a {
+    color: inherit; /* Los enlaces heredan el color de su padre por defecto */
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  /* Estilo para botones principales */
+  .button--primary {
+    background-color: var(--color-accent-yellow);
+    color: var(--color-text-dark);
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--base-border-radius);
+    font-family: var(--font-family-titles);
+    text-transform: uppercase;
+    text-align: center;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .button--primary:hover {
+    transform: scale(1.05);
+    color: var(--color-text-dark);
+  }
+
+  /* ==========================================================================
+   4. Estilos de Componentes - Header (Actualizado con Menú Hamburguesa)
+   ========================================================================== */
+.header-wrapper {
+  border-bottom: none; 
+  position: relative;
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem var(--page-padding);
+  max-width: var(--page-width);
+  margin: 0 auto;
+  position: relative;
+}
+
+.header-logo {
+  z-index: 1001;
+}
+
+.logo-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo-text {
+  font-family: var(--font-family-titles);
+  font-size: 2rem;
+  color: var(--color-accent-yellow);
+  line-height: 1;
+}
+
+.logo-tagline {
+  font-family: var(--font-family-textos);
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+}
+
+.logo-image {
+  max-height: 120px;
+  width: auto;
+}
+
+/* Botón hamburguesa */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1001;
+  position: relative;
+}
+
+.hamburger-line {
+  width: 100%;
+  height: 3px;
+  background-color: var(--color-accent-yellow);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+/* Animación del hamburguesa a X */
+.mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+  transform: rotate(45deg) translate(7px, 7px);
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Navegación principal */
+.main-navigation {
+  display: flex;
+  align-items: center;
+}
+
+.main-navigation__list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 2.5rem;
+}
+
+.main-navigation__link {
+  font-family: var(--font-family-subtitles);
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  font-size: 2.4rem;
+  font-weight: regular;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.main-navigation__link:hover {
+  color: var(--color-accent-yellow);
+  border-bottom-color: transparent;
+}
+
+.main-navigation__link.active {
+  color: var(--color-accent-yellow);
+  border-bottom-color: var(--color-accent-yellow);
+}
+
+/* Iconos de utilidad */
+.header-utility-icons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1001;
+}
+
+.header-utility-icons .icon-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-accent-yellow);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  transition: transform 0.2s ease;
+}
+
+.header-utility-icons .icon-link:hover {
+  transform: scale(1.1);
+}
+
+.header-utility-icons .icon-link svg {
+  stroke: var(--color-text-dark);
+  width: 22px;
+  height: 22px;
+}
+
+/* Contenedor derecho para iconos y hamburguesa */
+.header-right-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: -10px;
+}
+
+/* Barra de búsqueda expandible */
+.search-bar-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1002;
+  overflow: hidden;
+}
+
+.search-bar-container.search-bar-active {
+  width: min(500px, calc(100vw - 100px));
+  opacity: 1;
+  visibility: visible;
+}
+
+.search-form {
+  width: 100%;
+  margin: 0;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid var(--color-accent-yellow);
+  border-radius: 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  font-size: 1.6rem;
+  color: var(--color-text-dark);
+  outline: none;
+  font-family: var(--font-family-textos);
+}
+
+.search-input::placeholder {
+  color: rgba(25, 25, 25, 0.6);
+}
+
+.search-submit-btn,
+.search-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent-yellow);
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border-radius: 50%;
+  margin: 4px;
+  min-width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.search-submit-btn:hover,
+.search-close-btn:hover {
+  background: #E5B800;
+  transform: scale(1.05);
+}
+
+.search-submit-btn svg,
+.search-close-btn svg {
+  stroke: var(--color-text-dark);
+  width: 20px;
+  height: 20px;
+}
+
+/* Ocultar navegación cuando la búsqueda está activa */
+.site-header.search-active .main-navigation {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Asegurar que el botón de búsqueda sea un botón */
+.search-toggle-btn {
+  background: var(--color-accent-yellow);
+  border: none;
+  cursor: pointer;
+}
+
+.search-toggle-btn:hover {
+  background: #E5B800;
+}
+
+/* Overlay del menú móvil */
+.mobile-menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-menu-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Prevenir scroll cuando el menú está abierto */
+body.mobile-menu-open {
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Responsive para Header - Tablets y Móviles (Menu Hamburguesa)
+   ========================================================================== */
+@media (max-width: 1000px) {
+  .site-header {
+    padding: 0.8rem 1.5rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: auto;
+    min-height: 70px;
+  }
+  
+  .header-logo {
+    flex: 0 0 auto;
+  }
+  
+  .logo-text {
+    font-size: 1.8rem;
+  }
+  
+  .logo-tagline {
+    font-size: 0.7rem;
+  }
+
+  /* Ajustes para búsqueda en tablets */
+  .search-bar-container.search-bar-active {
+    width: min(400px, calc(100vw - 100px)); /* Más conservador en tablets */
+  }
+
+  .search-input {
+    font-size: 1.4rem;
+    padding: 10px 16px;
+  }
+
+  .search-submit-btn,
+  .search-close-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 10px;
+  }
+
+  .search-submit-btn svg,
+  .search-close-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Mostrar botón hamburguesa en tablets también */
+  .mobile-menu-toggle {
+    display: flex;
+    order: 2;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .hamburger-line {
+    height: 3px;
+  }
+  
+  /* Ocultar navegación principal por defecto */
+  .main-navigation {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    height: 100vh;
+    background-color: var(--color-background);
+    z-index: 1000;
+    transition: right 0.3s ease;
+    padding: 80px 2rem 2rem;
+    border-left: 2px solid var(--color-accent-yellow);
+  }
+  
+  /* Navegación abierta */
+  .main-navigation.mobile-nav-open {
+    right: 0;
+  }
+  
+  .main-navigation__list {
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    align-items: flex-start;
+  }
+  
+  .main-navigation__item {
+    width: 100%;
+  }
+  
+  .main-navigation__link {
+    font-size: 2rem;
+    padding: 1rem 0;
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .main-navigation__link:hover {
+    color: var(--color-accent-yellow);
+    padding-left: 1rem;
+  }
+  
+  /* Iconos de utilidad */
+  .header-utility-icons {
+    position: static;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    order: 1;
+  }
+  
+  .header-utility-icons .icon-link {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .header-utility-icons .icon-link svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ==========================================================================
+   Responsive para Header - Solo Móviles (ajustes específicos)
+   ========================================================================== */
+@media (max-width: 480px) {
+  .site-header {
+    padding: 0.6rem 1rem;
+    min-height: 60px;
+  }
+
+  .logo-text {
+    font-size: 1.6rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.65rem;
+  }
+
+  .mobile-menu-toggle {
+    width: 26px;
+    height: 26px;
+  }
+
+  .hamburger-line {
+    height: 2.5px;
+  }
+
+  .main-navigation {
+    padding: 1rem;
+  }
+
+  .main-navigation__link {
+    font-size: 1.8rem;
+  }
+
+  .header-utility-icons .icon-link {
+    width: 36px;
+    height: 36px;
+  }
+
+  .header-utility-icons .icon-link svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Ajustes para búsqueda en móviles */
+  .search-bar-container.search-bar-active {
+    width: min(320px, calc(100vw - 80px)); /* Más espacio en móviles */
+  }
+
+  .search-input {
+    font-size: 1.4rem;
+    padding: 10px 14px;
+  }
+
+  .search-submit-btn,
+  .search-close-btn {
+    min-width: 34px;
+    height: 34px;
+    padding: 8px;
+  }
+
+  .search-submit-btn svg,
+  .search-close-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .search-input-wrapper {
+    border-width: 1.5px;
+  }
+
+  /* Ajustes para búsqueda en pantallas pequeñas */
+  .search-bar-container.search-bar-active {
+    width: min(280px, calc(100vw - 60px)); /* Ajuste para pantallas pequeñas */
+  }
+
+  .search-input {
+    font-size: 1.3rem;
+    padding: 8px 12px;
+  }
+
+  .search-submit-btn,
+  .search-close-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 6px;
+  }
+
+  .search-submit-btn svg,
+  .search-close-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .search-input-wrapper {
+    border-radius: 20px;
+  }
+
+  /* Ajustes para búsqueda en pantallas muy pequeñas */
+  .search-bar-container.search-bar-active {
+    width: min(240px, calc(100vw - 40px)); /* Máximo ajuste para pantallas muy pequeñas */
+  }
+
+  .search-input {
+    font-size: 1.2rem;
+    padding: 6px 10px;
+  }
+
+  .search-submit-btn,
+  .search-close-btn {
+    min-width: 28px;
+    height: 28px;
+    padding: 5px;
+  }
+
+  .search-submit-btn svg,
+  .search-close-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .search-input-wrapper {
+    border-radius: 20px;
+  }
+}
+
+/* Móviles muy pequeños (360px hacia abajo) */
+@media (max-width: 360px) {
+  .site-header {
+    padding: 0.5rem 0.8rem;
+    min-height: 55px;
+  }
+
+  .logo-text {
+    font-size: 1.4rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.6rem;
+  }
+
+  .mobile-menu-toggle {
+    width: 24px;
+    height: 24px;
+  }
+
+  .hamburger-line {
+    height: 2px;
+  }
+
+  .main-navigation {
+    width: 260px;
+  }
+
+  .main-navigation__link {
+    font-size: 1.6rem;
+  }
+
+  .header-utility-icons {
+    gap: 0.6rem;
+  }
+
+  .header-utility-icons .icon-link {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-utility-icons .icon-link svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Ajustes para búsqueda en pantallas pequeñas */
+  .search-bar-container.search-bar-active {
+    width: min(280px, calc(100vw - 60px)); /* Ajuste para pantallas pequeñas */
+  }
+
+  .search-input {
+    font-size: 1.3rem;
+    padding: 8px 12px;
+  }
+
+  .search-submit-btn,
+  .search-close-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 6px;
+  }
+
+  .search-submit-btn svg,
+  .search-close-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Móviles extremadamente pequeños (320px hacia abajo) */
+@media (max-width: 320px) {
+  .site-header {
+    padding: 0.4rem 0.6rem;
+    min-height: 50px;
+  }
+
+  .logo-text {
+    font-size: 1.2rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.55rem;
+  }
+
+  .mobile-menu-toggle {
+    width: 22px;
+    height: 22px;
+  }
+
+  .main-navigation__link {
+    font-size: 1.4rem;
+  }
+
+  .header-utility-icons .icon-link {
+    width: 30px;
+    height: 30px;
+  }
+
+  .header-utility-icons .icon-link svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Ajustes para búsqueda en pantallas muy pequeñas */
+  .search-bar-container.search-bar-active {
+    width: min(240px, calc(100vw - 40px)); /* Máximo ajuste para pantallas muy pequeñas */
+  }
+
+  .search-input {
+    font-size: 1.2rem;
+    padding: 6px 10px;
+  }
+
+  .search-submit-btn,
+  .search-close-btn {
+    min-width: 28px;
+    height: 28px;
+    padding: 5px;
+  }
+
+  .search-submit-btn svg,
+  .search-close-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .search-input-wrapper {
+    border-radius: 20px;
+  }
+}
+
+/* ==========================================================================
+   5. Estilos de Componentes - Hero Homepage
+   ========================================================================== */
+.hero-section-wrapper {
+  padding: 0 0 2.5rem 0;
+  background-color: transparent;
+}
+.hero-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+.hero-text {
+  flex: 1;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.hero-title {
+  margin-bottom: 1.2rem;
+  text-align: center;
+  font-family: var(--font-family-titles);
+  font-weight: bold;
+  color: var(--color-accent-yellow);
+  line-height: 1.05;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-title-main {
+  display: block;
+  font-size: 5.2rem;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.hero-title-tcg {
+  display: block;
+  font-size: 7.5rem;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-yellow);
+  white-space: nowrap;
+}
+.hero-main-btn {
+  margin-top: 0.5rem;
+  font-size: 3rem;
+  font-family: var(--font-family-titles);
+  background: var(--color-accent-yellow);
+  color: #111;
+  border: 4px solid #222;
+  border-radius: 50px;
+  box-shadow: 2px 2px 0 #000;
+  padding: 0.1em 1.5em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  transition: transform 0.15s, box-shadow 0.15s;
+  font-weight: bold;
+}
+.hero-main-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 4px 4px 0 #000;
+}
+.hero-image {
+  flex: 1;
+  max-width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-img-main {
+  max-width: 95%;
+  width: 410px;
+  height: auto;
+  filter: drop-shadow(4px 4px 0 #000);
+}
+
+/* Tablets en landscape (1024px hacia abajo) */
+@media (max-width: 1024px) {
+  .hero-title-main {
+    font-size: 3.8rem; /* Reducido para que quepa "COMPRA, VENDE Y VIVE EL" */
+  }
+  .hero-title-tcg {
+    font-size: 5.5rem; /* Proporcionalmente más grande pero que quepa "TCG COMO NUNCA" */
+  }
+  .hero-main-btn {
+    font-size: 2.4rem;
+  }
+  .hero-img-main {
+    width: 350px;
+  }
+}
+
+/* Rango problemático: Tablets pequeñas y pantallas medianas (769px-900px) */
+@media (max-width: 900px) and (min-width: 769px) {
+  .hero-title-main {
+    font-size: 3.2rem; /* Más pequeño para que quepa en este rango específico */
+  }
+  .hero-title-tcg {
+    font-size: 4.8rem; /* Proporcionalmente ajustado */
+  }
+  .hero-main-btn {
+    font-size: 2.2rem;
+  }
+}
+
+/* Tablets en portrait (789px hacia abajo) */
+@media (max-width: 890px) {
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+    padding: 0 1.5rem;
+  }
+  .hero-text, .hero-image {
+    max-width: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-title-main {
+    font-size: 2.8rem; /* Tamaño que permita que quepa la línea completa */
+  }
+  .hero-title-tcg {
+    font-size: 4rem; /* Más grande pero proporcional */
+  }
+  .hero-img-main {
+    width: 80vw;
+    max-width: 320px;
+  }
+  .hero-main-btn {
+    font-size: 1.8rem;
+    padding: 0.6em 1.4em;
+  }
+}
+
+/* Móviles (480px hacia abajo) */
+@media (max-width: 480px) {
+  .hero-content {
+    padding: 0 1rem;
+    gap: 1.5rem;
+  }
+  .hero-title-main {
+    font-size: 2.2rem; /* Reducido para móviles pequeños */
+  }
+  .hero-title-tcg {
+    font-size: 3.2rem; /* Proporcionalmente más grande */
+  }
+  .hero-img-main {
+    width: 90vw;
+    max-width: 280px;
+  }
+  .hero-main-btn {
+    font-size: 1.8rem;
+    padding: 0.7em 1.5em;
+  }
+}
+
+/* Móviles muy pequeños (360px hacia abajo) */
+@media (max-width: 360px) {
+  .hero-content {
+    padding: 0 0.8rem;
+    gap: 1.2rem;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .hero-text {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .hero-title {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .hero-title-main {
+    font-size: 1.6rem; /* Más pequeño para pantallas muy estrechas */
+    line-height: 1.1;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .hero-title-tcg {
+    font-size: 2.4rem;
+    line-height: 1.1;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .hero-image {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .hero-img-main {
+    width: 95vw;
+    max-width: 250px;
+    display: block;
+    margin: 0 auto;
+  }
+  
+  .hero-main-btn {
+    font-size: 1.2rem;
+    padding: 0.5em 1.2em;
+    border-width: 3px;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+  }
+}
+
+/* Móviles extremadamente pequeños (320px hacia abajo) */
+@media (max-width: 320px) {
+  .hero-content {
+    padding: 0 0.6rem;
+    gap: 1rem;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .hero-text {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .hero-title {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .hero-title-main {
+    font-size: 1.4rem;
+    line-height: 1.1;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .hero-title-tcg {
+    font-size: 2rem;
+    line-height: 1.1;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .hero-image {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .hero-img-main {
+    width: 98vw;
+    max-width: 220px;
+    display: block;
+    margin: 0 auto;
+  }
+  
+  .hero-main-btn {
+    font-size: 1rem;
+    padding: 0.4em 1.1em;
+    border-width: 2px;
+    box-shadow: 1px 1px 0 #000;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .hero-main-btn:hover {
+    box-shadow: 2px 2px 0 #000;
+  }
+}
+
+/* ==========================================================================
+   6. Estilos de Componentes - Bloques de Categorías
+   ========================================================================== */
+.category-blocks-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  padding: 2.5rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.category-block {
+  background-color: var(--block-bg-color);
+  color: var(--block-text-color);
+  border: 4px solid var(--block-border-color);
+  border-radius: var(--base-border-radius);
+  padding: 1.5rem 1.2rem;
+  text-decoration: none;
+  display: block;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  min-height: 140px;
+  max-height: 180px;
+}
+
+.category-block:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.category-block__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  align-items: center;
+  text-align: center;
+}
+
+.category-block__title {
+  font-family: var(--font-family-titles);
+  color: var(--block-text-color);
+  font-size: 2.6rem; /* Reducido de 2.8rem */
+  margin-bottom: 0.6rem;
+  font-weight: normal;
+  text-align: center;
+  line-height: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-width: 100%;
+}
+
+.category-block__image-wrapper {
+  margin-top: auto;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.category-block__image-wrapper img {
+  max-width: 50%;
+  height: auto;
+}
+
+/* Laptops pequeñas (1024px hacia abajo) */
+@media (max-width: 1024px) {
+  .category-blocks-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    padding: 2rem 1rem;
+  }
+  .category-block__title {
+    font-size: 2rem; /* Reducido más de 2.2rem */
+    margin-bottom: 0.5rem;
+    line-height: 0.9;
+  }
+  .category-block {
+    min-height: 120px;
+    max-height: 160px;
+    padding: 1.2rem 0.8rem; /* Reducido padding horizontal */
+  }
+  .category-block__image-wrapper img {
+    max-width: 35%; /* Reducido de 45% para evitar desbordamiento */
+  }
+}
+
+/* Tablets (890px hacia abajo) */
+@media (max-width: 890px) {
+  .category-blocks-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 1.8rem 1.2rem;
+  }
+  .category-block__title {
+    font-size: 1.8rem; /* Reducido más de 2rem */
+    margin-bottom: 0.5rem;
+    line-height: 0.85;
+  }
+  .category-block {
+    padding: 1rem 0.8rem; /* Reducido padding horizontal */
+    min-height: 110px;
+    max-height: 140px;
+  }
+  .category-block__image-wrapper img {
+    max-width: 30%; /* Reducido de 40% para evitar desbordamiento */
+  }
+}
+
+/* Móviles (480px hacia abajo) */
+@media (max-width: 480px) {
+  .category-blocks-grid {
+    grid-template-columns: 1/2fr; /* Corregido de 1/2fr a 1fr */
+    gap: 0.8rem;
+    padding: 1.5rem 0.8rem;
+  }
+  .category-block__title {
+    font-size: 1.8rem;
+    margin-bottom: 0.4rem;
+    line-height: 0.9;
+    text-align: center;
+    width: 100%;
+  }
+  .category-block {
+    padding: 1.2rem;
+    min-height: 130px;
+    max-height: 160px;
+    aspect-ratio: 1.3 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .category-block__content {
+    width: 100%;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+  .category-block__image-wrapper img {
+    max-width: 40%;
+  }
+}
+
+/* Móviles muy pequeños (360px hacia abajo) */
+@media (max-width: 360px) {
+  .category-blocks-grid {
+    gap: 0.6rem;
+    padding: 1.2rem 0.6rem;
+  }
+  .category-block__title {
+    font-size: 1.6rem; /* Reducido de 1.8rem */
+    margin-bottom: 0.4rem;
+    line-height: 0.85;
+    text-align: center;
+    width: 100%;
+  }
+  .category-block {
+    padding: 1rem;
+    min-height: 120px; /* Reducido de 130px */
+    max-height: 150px; /* Reducido de 160px */
+    aspect-ratio: 1.2 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .category-block__content {
+    width: 100%;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+  .category-block__image-wrapper img {
+    max-width: 38%;
+  }
+}
+
+/* Móviles extremadamente pequeños (320px hacia abajo) */
+@media (max-width: 320px) {
+  .category-blocks-grid {
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+  }
+  .category-block__title {
+    font-size: 1.4rem; /* Reducido de 1.6rem */
+    margin-bottom: 0.3rem;
+    line-height: 0.8;
+    text-align: center;
+    width: 100%;
+  }
+  .category-block {
+    padding: 0.8rem;
+    min-height: 110px; /* Reducido de 120px */
+    max-height: 140px; /* Reducido de 150px */
+    aspect-ratio: 1.1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .category-block__content {
+    width: 100%;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+  .category-block__image-wrapper img {
+    max-width: 35%;
+  }
+}
+
+/* ==========================================================================
+   7. Estilos de Accesibilidad - Skip to Content Link
+   ========================================================================== */
+
+/* Oculta el enlace visualmente, pero lo mantiene accesible para lectores de pantalla */
+.skip-to-content-link {
+  position: absolute;
+  transform: translateY(-100%);
+  transition: transform 0.3s;
+  background: var(--color-accent-yellow);
+  color: var(--color-text-dark);
+  font-family: var(--font-family-subtitles);
+  font-weight: bold;
+  padding: 0.8rem 1.5rem;
+  z-index: 9999; /* Para que aparezca por encima de todo */
+  left: 50%;
+  transform: translate(-50%, -120%); /* Lo esconde fuera de la pantalla */
+}
+
+/* Cuando el enlace es enfocado con el teclado, lo hacemos visible */
+.skip-to-content-link:focus {
+  transform: translate(-50%, 20%); /* Lo baja para que sea visible */
+}
+
+/* ==========================================================================
+   Clase de utilidad para el ancho de página
+   ========================================================================== */
+.page-width {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 0 var(--page-padding);
+}
+
+/* Responsive para page-width */
+@media (max-width: 1000px) {
+  .page-width {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-width {
+    padding: 0 1rem;
+  }
+}
+
+/* ==========================================================================
+   Responsive para Header - Laptops Grandes (navegación horizontal)
+   ========================================================================== */
+@media (min-width: 1001px) {
+  /* En laptops grandes, ocultar el botón hamburguesa */
+  .mobile-menu-toggle {
+    display: none;
+  }
+  
+  /* Asegurar que la navegación sea visible */
+  .main-navigation {
+    position: static;
+    width: auto;
+    height: auto;
+    background: transparent;
+    padding: 0;
+    border: none;
+    display: flex;
+  }
+  
+  .main-navigation__list {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .main-navigation__link {
+    display: inline-block;
+    border-bottom: 2px solid transparent;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main-navigation__list {
+    gap: 2.5rem;
+  }
+  
+  .main-navigation__link {
+    font-size: 2.4rem;
+  }
+}
+
+/* Rango problemático (1024px-1100px) - Reducir fuente para evitar ruptura */
+@media (min-width: 1024px) and (max-width: 1100px) {
+  .main-navigation__list {
+    gap: 2rem;
+  }
+  
+  .main-navigation__link {
+    font-size: 2rem;
+  }
+}
+
+/* Rango medio (1001px-1023px) */
+@media (min-width: 1001px) and (max-width: 1023px) {
+  .main-navigation__list {
+    gap: 1.8rem;
+  }
+  
+  .main-navigation__link {
+    font-size: 2rem;
+  }
+}
+
+/* ==========================================================================
+   8. Estilos de Componentes - Nubes de Fondo Animadas (Mejoradas)
+   ========================================================================== */
+.background-clouds-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.cloud {
+  position: absolute;
+  background: var(--cloud-color, rgba(255, 255, 255, 0.2));
+  border-radius: 50px;
+  opacity: 1;
+  animation: float-across linear infinite;
+  transform-origin: center;
+  filter: blur(var(--cloud-blur, 2px));
+}
+
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: inherit;
+}
+
+/* Tamaños base de nubes más prominentes */
+.cloud--small {
+  width: calc(80px * var(--cloud-size-scale, 1.2));
+  height: calc(30px * var(--cloud-size-scale, 1.2));
+  left: -100px;
+}
+
+.cloud--small::before {
+  width: 50px;
+  height: 50px;
+  top: -25px;
+  left: 10px;
+}
+
+.cloud--small::after {
+  width: 30px;
+  height: 30px;
+  top: -15px;
+  left: 40px;
+}
+
+.cloud--medium {
+  width: calc(120px * var(--cloud-size-scale, 1.2));
+  height: calc(45px * var(--cloud-size-scale, 1.2));
+  left: -140px;
+}
+
+.cloud--medium::before {
+  width: 70px;
+  height: 70px;
+  top: -35px;
+  left: 15px;
+}
+
+.cloud--medium::after {
+  width: 40px;
+  height: 40px;
+  top: -20px;
+  left: 60px;
+}
+
+.cloud--large {
+  width: calc(160px * var(--cloud-size-scale, 1.2));
+  height: calc(60px * var(--cloud-size-scale, 1.2));
+  left: -180px;
+}
+
+.cloud--large::before {
+  width: 90px;
+  height: 90px;
+  top: -45px;
+  left: 20px;
+}
+
+.cloud--large::after {
+  width: 50px;
+  height: 50px;
+  top: -25px;
+  left: 80px;
+}
+
+/* Animación mejorada */
+@keyframes float-across {
+  0% {
+    transform: translateX(-200px) scale(var(--cloud-size-scale, 1.2));
+  }
+  100% {
+    transform: translateX(calc(100vw + 200px)) scale(var(--cloud-size-scale, 1.2));
+  }
+}
+
+/* Estilos de color específicos */
+.background-clouds-container[data-cloud-style="light"] .cloud {
+  background: rgba(255, 255, 255, var(--cloud-opacity, 0.2));
+}
+
+.background-clouds-container[data-cloud-style="dark"] .cloud {
+  background: rgba(60, 60, 60, var(--cloud-opacity, 0.2));
+}
+
+.background-clouds-container[data-cloud-style="purple"] .cloud {
+  background: rgba(147, 112, 219, var(--cloud-opacity, 0.2));
+}
+
+.background-clouds-container[data-cloud-style="blue"] .cloud {
+  background: rgba(135, 206, 235, var(--cloud-opacity, 0.2));
+}
+
+.background-clouds-container .cloud::before,
+.background-clouds-container .cloud::after {
+  background: inherit;
+}
+
+/* Responsive design para nubes */
+@media screen and (max-width: 768px) {
+  .cloud--small {
+    width: calc(60px * var(--cloud-size-scale, 1.2));
+    height: calc(25px * var(--cloud-size-scale, 1.2));
+  }
+  
+  .cloud--medium {
+    width: calc(90px * var(--cloud-size-scale, 1.2));
+    height: calc(35px * var(--cloud-size-scale, 1.2));
+  }
+  
+  .cloud--large {
+    width: calc(120px * var(--cloud-size-scale, 1.2));
+    height: calc(45px * var(--cloud-size-scale, 1.2));
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .cloud--small {
+    width: calc(50px * var(--cloud-size-scale, 1.2));
+    height: calc(20px * var(--cloud-size-scale, 1.2));
+  }
+  
+  .cloud--medium {
+    width: calc(75px * var(--cloud-size-scale, 1.2));
+    height: calc(30px * var(--cloud-size-scale, 1.2));
+  }
+  
+  .cloud--large {
+    width: calc(100px * var(--cloud-size-scale, 1.2));
+    height: calc(40px * var(--cloud-size-scale, 1.2));
+  }
+}
+
+/* Ocultar iconos y hamburguesa en pantallas pequeñas cuando la búsqueda está activa */
+@media (max-width: 790px) {
+  .site-header.search-active .header-utility-icons,
+  .site-header.search-active .mobile-menu-toggle,
+  .site-header.search-active .header-logo {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  /* Asegurar que la barra de búsqueda tenga el máximo espacio disponible */
+  .site-header.search-active .search-bar-container.search-bar-active {
+    width: min(calc(100vw - 40px), 500px); /* Máximo espacio ahora que el logo está oculto */
+  }
+}
+
+/* Ajustes adicionales para pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .site-header.search-active .search-bar-container.search-bar-active {
+    width: min(calc(100vw - 30px), 350px); /* Menos margen en móviles */
+  }
+}
+
+@media (max-width: 360px) {
+  .site-header.search-active .search-bar-container.search-bar-active {
+    width: min(calc(100vw - 20px), 300px); /* Mínimo margen en pantallas muy pequeñas */
+  }
+}
+
+/* Tablets (1000px hacia abajo) */
+@media (max-width: 1000px) {
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .hero-text {
+    max-width: 100%;
+  }
+  
+  .hero-title-main {
+    font-size: 4.2rem;
+  }
+  
+  .hero-title-sub {
+    font-size: 1.8rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.4rem;
+  }
+  
+  .hero-image {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .collection-hero {
+    padding: 2rem 0;
+  }
+  
+  .collection-hero__inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .collection-hero__content {
+    max-width: 100%;
+  }
+  
+  .collection-hero__title {
+    font-size: 3rem;
+  }
+  
+  .collection-hero__description {
+    font-size: 1.4rem;
+  }
+  
+  .collection-hero__image {
+    max-width: 250px;
+  }
+}

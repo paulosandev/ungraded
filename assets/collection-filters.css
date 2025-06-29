@@ -1,0 +1,127 @@
+/* Collection Filters CSS */
+/* Estilos adicionales para la funcionalidad de filtros */
+
+.product-grid.loading {
+  position: relative;
+}
+
+.product-grid.loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-grid.loading::after {
+  content: 'Cargando productos...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fbbf24;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: bold;
+  z-index: 11;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Animación de carga giratorio */
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.product-grid.loading::before {
+  background: 
+    radial-gradient(circle at center, transparent 20px, rgba(255, 255, 255, 0.8) 21px),
+    conic-gradient(from 0deg, #fbbf24, transparent, #fbbf24);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: spin 1s linear infinite;
+  z-index: 12;
+}
+
+/* Filtros responsive */
+@media (max-width: 768px) {
+  .collection-filters-form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .filter-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .filter-group-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+  }
+}
+
+/* Estados de hover para mejor UX */
+.filter-checkbox:hover .checkmark {
+  border-color: #fbbf24;
+  transform: scale(1.05);
+}
+
+.clear-filters-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.clear-filters-btn:disabled:hover {
+  background-color: #ccc;
+}
+
+/* Transiciones suaves para la cuadrícula */
+.product-grid {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.product-grid.loading {
+  transform: translateY(5px);
+}
+
+/* Error states */
+.filter-error {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mejoras de accesibilidad */
+.filter-checkbox:focus-within .checkmark {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+.clear-filters-btn:focus {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+} 

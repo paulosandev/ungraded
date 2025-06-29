@@ -1,0 +1,84 @@
+<div class="page-width">
+  <div class="category-blocks-grid">
+    {%- for block in section.blocks -%}
+      <a href="{{ block.settings.link }}" 
+         class="category-block" 
+         style="--block-bg-color: {{ block.settings.background_color }}; --block-text-color: {{ block.settings.text_color }}; --block-border-color: {{ block.settings.border_color }};"
+         {{ block.shopify_attributes }}>
+
+        <div class="category-block__content">
+          <h2 class="category-block__title">{{ block.settings.title }}</h2>
+          {%- if block.settings.image != blank -%}
+            <div class="category-block__image-wrapper">
+              <img src="{{ block.settings.image | image_url: width: 400 }}" 
+                   alt="{{ block.settings.title | escape }}" 
+                   loading="lazy"
+                   width="{{ block.settings.image.width }}"
+                   height="{{ block.settings.image.height }}">
+            </div>
+          {%- endif -%}
+        </div>
+      </a>
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Bloques de Categorías",
+    "max_blocks": 4,
+    "blocks": [
+      {
+        "type": "category",
+        "name": "Bloque de Categoría",
+        "settings": [
+          { 
+            "type": "text", 
+            "id": "title", 
+            "label": "Título", 
+            "default": "PREVENTAS" 
+          },
+          { 
+            "type": "image_picker", 
+            "id": "image", 
+            "label": "Ilustración" 
+          },
+          { 
+            "type": "url", 
+            "id": "link", 
+            "label": "Enlace" 
+          },
+          {
+            "type": "color",
+            "id": "background_color",
+            "label": "Color de Fondo",
+            "default": "#E34FE3"
+          },
+          {
+            "type": "color",
+            "id": "text_color",
+            "label": "Color del Texto",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "border_color",
+            "label": "Color del Borde",
+            "default": "#000000"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Bloques de Categorías",
+        "blocks": [
+          { "type": "category" },
+          { "type": "category" },
+          { "type": "category" },
+          { "type": "category" }
+        ]
+      }
+    ]
+  }
+{% endschema %}

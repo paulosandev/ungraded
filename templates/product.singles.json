@@ -1,0 +1,61 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product-singles",
+      "blocks": {
+        "title": {
+          "type": "title",
+          "settings": {}
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {}
+        },
+        "stock": {
+          "type": "stock",
+          "settings": {}
+        },
+        "view_more_photos": {
+          "type": "view_more_photos",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "title",
+        "price",
+        "buy_buttons",
+        "stock",
+        "view_more_photos"
+      ],
+      "settings": {
+        "message_line_1": "ESTÁS EN UNGRADED, AL MENOS",
+        "message_line_2": "QUE PAREZCA QUE SABES LO QUE HACES.",
+        "message_size_desktop": 26,
+        "message_size_mobile": 16,
+        "characters_image": "shopify://shop_images/Card-toonsWeb.png",
+        "characters_width_desktop": 200,
+        "characters_width_mobile": 150,
+        "enable_sticky_info": false,
+        "media_size": "medium",
+        "padding_top": 20,
+        "padding_bottom": 20
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

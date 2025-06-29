@@ -1,0 +1,27 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-collection-singles",
+      "settings": {
+        "title_line_1": "Solteras, sin slab y con",
+        "title_line_2": "mucho brillo algo como tinder...",
+        "title_line_1_size": 6,
+        "title_line_2_size": 4.5,
+        "mascot_image": "shopify://shop_images/singles.png",
+        "slider_handle_icon": "shopify://shop_images/image2vector.svg"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

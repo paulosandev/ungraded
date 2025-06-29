@@ -1,0 +1,443 @@
+<div class="header-wrapper">
+  <header class="page-width site-header">
+    <div class="header-logo">
+      <a href="{{ routes.root_url }}">
+        {%- if section.settings.logo != blank -%}
+          <img
+            src="{{ section.settings.logo | image_url: width: 200 }}"
+            alt="{{ shop.name | escape }}"
+            class="logo-image"
+            width="200"
+            height="150"
+          >
+        {%- else -%}
+          <div class="logo-text-wrapper">
+            <span class="logo-text">UNGRADED</span>
+            <span class="logo-tagline">Trading Card Game</span>
+          </div>
+        {%- endif -%}
+      </a>
+    </div>
+
+    <!-- Navegación principal (oculta en móviles) -->
+    <nav class="main-navigation" aria-label="Main navigation">
+      <ul class="main-navigation__list">
+        {%- for link in section.settings.menu.links -%}
+          <li class="main-navigation__item">
+            <a
+              href="{{ link.url }}"
+              class="main-navigation__link{% if link.active %} active{% endif %}"
+              {% if link.active %}
+                aria-current="page"
+              {% endif %}
+            >
+              {{- link.title -}}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+
+    <!-- Barra de búsqueda expandible -->
+    <div class="search-bar-container" id="searchBarContainer">
+      <form action="{{ routes.search_url }}" method="get" role="search" class="search-form">
+        <div class="search-input-wrapper">
+          <input
+            type="search"
+            name="q"
+            value="{{ search.terms | escape }}"
+            placeholder="Buscar productos..."
+            class="search-input"
+            id="searchInput"
+            autocomplete="off"
+          >
+          <button type="submit" class="search-submit-btn" aria-label="Buscar">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+          <button type="button" class="search-close-btn" id="searchCloseBtn" aria-label="Cerrar búsqueda">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Contenedor para iconos y menú hamburguesa -->
+    <div class="header-right-section">
+      <!-- Iconos de utilidad -->
+      <div class="header-utility-icons">
+        <button class="icon-link search-toggle-btn" id="searchToggleBtn" aria-label="Buscar">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        <a href="{{ routes.cart_url }}" class="icon-link" aria-label="Carrito">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+        </a>
+        <a href="{{ routes.account_url }}" class="icon-link" aria-label="Mi Cuenta">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Botón hamburguesa para móviles -->
+      <button class="mobile-menu-toggle" aria-label="Abrir menú" aria-expanded="false">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+
+    <!-- Overlay del menú móvil -->
+    <div class="mobile-menu-overlay"></div>
+  </header>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileNav = document.querySelector('.main-navigation');
+    const overlay = document.querySelector('.mobile-menu-overlay');
+    const body = document.body;
+
+    // Elementos de búsqueda
+    const searchToggleBtn = document.getElementById('searchToggleBtn');
+    const searchBarContainer = document.getElementById('searchBarContainer');
+    const searchCloseBtn = document.getElementById('searchCloseBtn');
+    const searchInput = document.getElementById('searchInput');
+    const header = document.querySelector('.site-header');
+
+    // Funcionalidad del menú hamburguesa
+    if (menuToggle) {
+      menuToggle.addEventListener('click', function () {
+        const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+
+        // Toggle aria-expanded
+        menuToggle.setAttribute('aria-expanded', !isExpanded);
+
+        // Toggle classes
+        menuToggle.classList.toggle('active');
+        mobileNav.classList.toggle('mobile-nav-open');
+        overlay.classList.toggle('active');
+        body.classList.toggle('mobile-menu-open');
+      });
+
+      // Cerrar menú al hacer click en overlay
+      overlay.addEventListener('click', function () {
+        menuToggle.setAttribute('aria-expanded', 'false');
+        menuToggle.classList.remove('active');
+        mobileNav.classList.remove('mobile-nav-open');
+        overlay.classList.remove('active');
+        body.classList.remove('mobile-menu-open');
+      });
+
+      // Cerrar menú con tecla Escape
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && mobileNav.classList.contains('mobile-nav-open')) {
+          menuToggle.setAttribute('aria-expanded', 'false');
+          menuToggle.classList.remove('active');
+          mobileNav.classList.remove('mobile-nav-open');
+          overlay.classList.remove('active');
+          body.classList.remove('mobile-menu-open');
+        }
+      });
+    }
+
+    // Funcionalidad de búsqueda expandible
+    if (searchToggleBtn && searchBarContainer && searchCloseBtn) {
+      // Abrir barra de búsqueda
+      searchToggleBtn.addEventListener('click', function () {
+        header.classList.add('search-active');
+        searchBarContainer.classList.add('search-bar-active');
+        setTimeout(() => {
+          searchInput.focus();
+        }, 300);
+      });
+
+      // Cerrar barra de búsqueda
+      searchCloseBtn.addEventListener('click', function () {
+        header.classList.remove('search-active');
+        searchBarContainer.classList.remove('search-bar-active');
+        searchInput.value = '';
+      });
+
+      // Cerrar con tecla Escape
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && searchBarContainer.classList.contains('search-bar-active')) {
+          header.classList.remove('search-active');
+          searchBarContainer.classList.remove('search-bar-active');
+          searchInput.value = '';
+        }
+      });
+
+      // Prevenir que el formulario de búsqueda se envíe si está vacío
+      searchBarContainer.querySelector('.search-form').addEventListener('submit', function (e) {
+        if (searchInput.value.trim() === '') {
+          e.preventDefault();
+        }
+      });
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Header Personalizado",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menú de Navegación Principal",
+      "default": "main-menu"
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+  :root {
+    /* Variables dinámicas del Header */
+    --header-logo-height-desktop: {{ settings.logo_height_desktop | default: 120 }}px;
+    --header-logo-height-tablet: {{ settings.logo_height_tablet | default: 80 }}px;
+    --header-logo-height-mobile: {{ settings.logo_height_mobile | default: 60 }}px;
+    --header-logo-text-size-desktop: {{ settings.logo_text_size_desktop | default: 2.0 }}rem;
+    --header-logo-text-size-mobile: {{ settings.logo_text_size_mobile | default: 1.6 }}rem;
+
+    --header-icons-size-desktop: {{ settings.header_icons_size_desktop | default: 40 }}px;
+    --header-icons-size-tablet: {{ settings.header_icons_size_tablet | default: 36 }}px;
+    --header-icons-size-mobile: {{ settings.header_icons_size_mobile | default: 32 }}px;
+    --header-icons-spacing: {{ settings.header_icons_spacing | default: 1.0 }}rem;
+    --header-icons-background-color: {{ settings.header_icons_background_color | default: '#f3b30f' }};
+    --header-icons-color: {{ settings.header_icons_color | default: '#212121' }};
+    --header-icons-border-radius: {{ settings.header_icons_border_radius | default: 50 }}%;
+    --header-icons-hover-scale: {{ settings.header_icons_hover_scale | default: 1.1 }};
+
+    --header-padding-vertical: {{ settings.header_padding_vertical | default: 1.0 }}rem;
+    --header-padding-horizontal: {{ settings.header_padding_horizontal | default: 1.5 }}rem;
+    --header-alignment: {{ settings.header_alignment | default: 'space-between' }};
+
+    --hamburger-size: {{ settings.hamburger_size | default: 30 }}px;
+    --hamburger-line-thickness: {{ settings.hamburger_line_thickness | default: 3 }}px;
+    --hamburger-color: {{ settings.hamburger_color | default: '#f3b30f' }};
+
+    --search-bar-max-width: {{ settings.search_bar_max_width | default: 500 }}px;
+    --search-bar-border-radius: {{ settings.search_bar_border_radius | default: 25 }}px;
+    --search-bar-background: {{ settings.search_bar_background | default: '#ffffff' }};
+    --search-bar-border-color: {{ settings.search_bar_border_color | default: '#f3b30f' }};
+    --search-bar-border-thickness: {{ settings.search_bar_border_thickness | default: 2 }}px;
+
+    --header-shadow-opacity: {{ settings.header_shadow_opacity | default: 10 }}%;
+  }
+
+  /* Aplicar estilos dinámicos del header */
+  {% if settings.header_enable_shadow %}
+  .header-wrapper {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, calc(var(--header-shadow-opacity) / 100));
+  }
+  {% endif %}
+
+  .site-header {
+    justify-content: var(--header-alignment);
+    padding: var(--header-padding-vertical) var(--header-padding-horizontal);
+  }
+
+  .logo-text {
+    font-size: var(--header-logo-text-size-desktop);
+  }
+
+  .logo-tagline {
+    font-size: calc(var(--header-logo-text-size-desktop) * 0.375);
+  }
+
+  .logo-image {
+    max-height: var(--header-logo-height-desktop);
+  }
+
+  .mobile-menu-toggle {
+    width: var(--hamburger-size);
+    height: var(--hamburger-size);
+  }
+
+  .hamburger-line {
+    height: var(--hamburger-line-thickness);
+    background-color: var(--hamburger-color);
+    border-radius: calc(var(--hamburger-line-thickness) / 2);
+  }
+
+  .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(calc(var(--hamburger-line-thickness) + 4px), calc(var(--hamburger-line-thickness) + 4px));
+  }
+
+  .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(calc(var(--hamburger-line-thickness) + 4px), calc((var(--hamburger-line-thickness) + 4px) * -1));
+  }
+
+  .header-utility-icons {
+    gap: var(--header-icons-spacing);
+  }
+
+  .header-utility-icons .icon-link {
+    background-color: var(--header-icons-background-color);
+    border-radius: var(--header-icons-border-radius);
+    width: var(--header-icons-size-desktop);
+    height: var(--header-icons-size-desktop);
+  }
+
+  {% if settings.header_icons_hover_effect %}
+  .header-utility-icons .icon-link:hover {
+    transform: scale(var(--header-icons-hover-scale));
+  }
+  {% endif %}
+
+  .header-utility-icons .icon-link svg {
+    stroke: var(--header-icons-color);
+    width: calc(var(--header-icons-size-desktop) * 0.55);
+    height: calc(var(--header-icons-size-desktop) * 0.55);
+  }
+
+  .header-right-section {
+    gap: var(--header-icons-spacing);
+  }
+
+  .search-bar-container.search-bar-active {
+    width: min(var(--search-bar-max-width), calc(100vw - 100px));
+  }
+
+  .search-input-wrapper {
+    background: var(--search-bar-background);
+    border: var(--search-bar-border-thickness) solid var(--search-bar-border-color);
+    border-radius: var(--search-bar-border-radius);
+  }
+
+  .search-submit-btn,
+  .search-close-btn {
+    background: var(--header-icons-background-color);
+  }
+
+  {% if settings.header_icons_hover_effect %}
+  .search-submit-btn:hover,
+  .search-close-btn:hover {
+    transform: scale(var(--header-icons-hover-scale));
+  }
+  {% endif %}
+
+  .search-submit-btn svg,
+  .search-close-btn svg {
+    stroke: var(--header-icons-color);
+  }
+
+  .search-toggle-btn {
+    background: var(--header-icons-background-color);
+  }
+
+  /* Responsive - Tablet */
+  @media (max-width: 1000px) {
+    .logo-image {
+      max-height: var(--header-logo-height-tablet);
+    }
+
+    .logo-text {
+      font-size: calc(var(--header-logo-text-size-desktop) * 0.9);
+    }
+
+    .logo-tagline {
+      font-size: calc(var(--header-logo-text-size-desktop) * 0.35);
+    }
+
+    .header-utility-icons .icon-link {
+      width: var(--header-icons-size-tablet);
+      height: var(--header-icons-size-tablet);
+    }
+
+    .header-utility-icons .icon-link svg {
+      width: calc(var(--header-icons-size-tablet) * 0.55);
+      height: calc(var(--header-icons-size-tablet) * 0.55);
+    }
+  }
+
+  /* Responsive - Mobile */
+  @media (max-width: 480px) {
+    .logo-image {
+      max-height: var(--header-logo-height-mobile);
+    }
+
+    .logo-text {
+      font-size: var(--header-logo-text-size-mobile);
+    }
+
+    .logo-tagline {
+      font-size: calc(var(--header-logo-text-size-mobile) * 0.4);
+    }
+
+    .header-utility-icons .icon-link {
+      width: var(--header-icons-size-mobile);
+      height: var(--header-icons-size-mobile);
+    }
+
+    .header-utility-icons .icon-link svg {
+      width: calc(var(--header-icons-size-mobile) * 0.55);
+      height: calc(var(--header-icons-size-mobile) * 0.55);
+    }
+  }
+</style>

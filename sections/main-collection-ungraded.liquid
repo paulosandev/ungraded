@@ -1,0 +1,296 @@
+{% comment %}
+  main-collection-ungraded.liquid
+  Plantilla personalizada para las colecciones de la tienda Ungraded.
+{% endcomment %}
+
+<div class="page-width">
+  <div class="collection-container">
+    {% comment %} COLUMNA IZQUIERDA: FILTROS {% endcomment %}
+    <div class="collection-sidebar">
+      <h2 class="filter-title">Filtrar</h2>
+
+      {% comment %} Formulario de filtros {% endcomment %}
+      <form id="CollectionFiltersForm" class="collection-filters-form">
+        {% comment %} Obtener todas las etiquetas de productos en la colección {% endcomment %}
+        {% assign collection_tags = blank %}
+        {% for product in collection.products %}
+          {% for tag in product.tags %}
+            {% unless collection_tags contains tag %}
+              {% assign collection_tags = collection_tags | append: tag | append: ',' %}
+            {% endunless %}
+          {% endfor %}
+        {% endfor %}
+        {% assign collection_tags_array = collection_tags | split: ',' %}
+
+        {% comment %} Organizar etiquetas por categorías {% endcomment %}
+        {% assign rareza_tags = blank %}
+        {% assign expansion_tags = blank %}
+        {% assign other_tags = blank %}
+
+        {% for tag in collection_tags_array %}
+          {% if tag != blank %}
+            {% if tag contains 'Rareza_' %}
+              {% assign rareza_tags = rareza_tags | append: tag | append: ',' %}
+            {% elsif tag contains 'Expansion_' %}
+              {% assign expansion_tags = expansion_tags | append: tag | append: ',' %}
+            {% else %}
+              {% assign other_tags = other_tags | append: tag | append: ',' %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {% comment %} Filtros por Rareza {% endcomment %}
+        {% assign rareza_array = rareza_tags | split: ',' %}
+        {% if rareza_array.size > 0 %}
+          <div class="filter-group">
+            <h3 class="filter-group-title">Rareza</h3>
+            {% for tag in rareza_array %}
+              {% if tag != blank %}
+                {% assign tag_display = tag | remove: 'Rareza_' %}
+                <label class="filter-checkbox">
+                  <input
+                    type="checkbox"
+                    name="filter_tags"
+                    value="{{ tag }}"
+                    {% if current_tags contains tag %}
+                      checked
+                    {% endif %}
+                  >
+                  <span class="checkmark"></span>
+                  {{ tag_display }}
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% comment %} Filtros por Expansión {% endcomment %}
+        {% assign expansion_array = expansion_tags | split: ',' %}
+        {% if expansion_array.size > 0 %}
+          <div class="filter-group">
+            <h3 class="filter-group-title">Expansión</h3>
+            {% for tag in expansion_array %}
+              {% if tag != blank %}
+                {% assign tag_display = tag | remove: 'Expansion_' %}
+                <label class="filter-checkbox">
+                  <input
+                    type="checkbox"
+                    name="filter_tags"
+                    value="{{ tag }}"
+                    {% if current_tags contains tag %}
+                      checked
+                    {% endif %}
+                  >
+                  <span class="checkmark"></span>
+                  {{ tag_display }}
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% comment %} Otros filtros {% endcomment %}
+        {% assign other_array = other_tags | split: ',' %}
+        {% if other_array.size > 0 %}
+          <div class="filter-group">
+            <h3 class="filter-group-title">Otros</h3>
+            {% for tag in other_array %}
+              {% if tag != blank %}
+                <label class="filter-checkbox">
+                  <input
+                    type="checkbox"
+                    name="filter_tags"
+                    value="{{ tag }}"
+                    {% if current_tags contains tag %}
+                      checked
+                    {% endif %}
+                  >
+                  <span class="checkmark"></span>
+                  {{ tag }}
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% comment %} Botón para limpiar filtros {% endcomment %}
+        <button type="button" class="clear-filters-btn">Limpiar Filtros</button>
+      </form>
+    </div>
+
+    {% comment %} COLUMNA DERECHA: TÍTULO Y PRODUCTOS {% endcomment %}
+    <div class="collection-main-content">
+      {% comment %} Título y eslogan dinámico basado en la colección {% endcomment %}
+      <div class="collection-header">
+        <h1>{{ collection.title }}</h1>
+        {% case collection.handle %}
+          {% when 'singles' %}
+            <p class="collection-slogan">SOLTERAS, SIN SLAB Y CON MUCHO BRILLO ALGO COMO TINDER...</p>
+          {% when 'producto-sellado' %}
+            <p class="collection-slogan">¿ABRIRLO O NO ABRIRLO? EL DILEMA ETERNO DEL DEGENERADO.</p>
+          {% when 'preventas' %}
+            <p class="collection-slogan">¿ESTAS AQUI POR LAS PREVENTAS O POR PURA ANCIEDAD?</p>
+          {% when 'accesorios' %}
+            <p class="collection-slogan">ESTÁS EN UNGRADED, AL MENOS QUE PAREZCA QUE SABES LO QUE HACES.</p>
+        {% endcase %}
+      </div>
+
+      {% comment %} Cuadrícula de productos {% endcomment %}
+      <div class="product-grid">
+        {% for product in collection.products %}
+          {% comment %}
+            Aquí llamaremos a un 'snippet' para la tarjeta de producto.
+            Crearemos este snippet en el siguiente paso para mantener el código limpio.
+          {% endcomment %}
+          {% render 'product-card-ungraded', product_card_product: product %}
+        {% else %}
+          <p>No hay productos en esta colección.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .collection-container {
+    display: grid;
+    grid-template-columns: 250px 1fr; /* Columna de filtros de 250px y el resto para productos */
+    gap: 30px;
+  }
+  .collection-header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  .collection-slogan {
+    font-size: 1.2rem;
+    color: #fbbf24; /* Color amarillo de la marca */
+  }
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    transition: opacity 0.3s ease;
+  }
+  .product-grid.loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* Estilos para filtros */
+  .filter-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: #fbbf24;
+  }
+
+  .filter-group {
+    margin-bottom: 2rem;
+  }
+
+  .filter-group-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+
+  .filter-checkbox {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .filter-checkbox input[type='checkbox'] {
+    display: none;
+  }
+
+  .checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    margin-right: 10px;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .filter-checkbox input[type='checkbox']:checked + .checkmark {
+    background-color: #fbbf24;
+    border-color: #fbbf24;
+  }
+
+  .filter-checkbox input[type='checkbox']:checked + .checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+  }
+
+  .clear-filters-btn {
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+    width: 100%;
+  }
+
+  .clear-filters-btn:hover {
+    background-color: #b91c1c;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .collection-container {
+      grid-template-columns: 1fr;
+    }
+    .collection-sidebar {
+      order: 2;
+    }
+    .collection-main-content {
+      order: 1;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Colección Ungraded",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Configuración de Colección"
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 8,
+      "max": 50,
+      "step": 2,
+      "default": 16,
+      "label": "Productos por página"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sidebar",
+      "default": true,
+      "label": "Mostrar barra lateral de filtros"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Colección Ungraded"
+    }
+  ]
+}
+{% endschema %}

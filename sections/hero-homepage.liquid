@@ -1,0 +1,57 @@
+<div class="hero-section-wrapper">
+  <div class="page-width">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">
+          <span class="hero-title-main">COMPRA, VENDE Y VIVE EL</span>
+          <span class="hero-title-tcg">TCG COMO NUNCA</span>
+        </h1>
+        <a href="{{ section.settings.button_link }}" class="button--primary hero-main-btn">
+          {{ section.settings.button_text }}
+        </a>
+      </div>
+      <div class="hero-image">
+        {%- if section.settings.image -%}
+          <img src="{{ section.settings.image | image_url: width: 600 }}" alt="" class="hero-img-main">
+        {%- else -%}
+          {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Hero Homepage",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Ilustración Principal"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título",
+      "default": "COMPRA, VENDE Y VIVE EL TCG CÓMO NUNCA"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Texto del Botón",
+      "default": "COMPRA AHORA"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Enlace del Botón"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Homepage"
+    }
+  ]
+}
+{% endschema %}
