@@ -1664,3 +1664,19 @@ body.mobile-menu-open {
     max-width: 250px;
   }
 }
+
+/* -------------------------------------------------------------
+   Refuerzo de estilos de iconos y hamburguesa (evita transparencias)
+   ------------------------------------------------------------- */
+.header-utility-icons .icon-link,
+.search-toggle-btn,
+.mobile-menu-toggle {
+  background-color: var(--header-icons-background-color);
+  border-radius: var(--header-icons-border-radius);
+}
+
+.header-utility-icons .icon-link:hover,
+.search-toggle-btn:hover,
+.mobile-menu-toggle:hover {
+  background-color: var(--header-icons-hover-background-color);
+}
