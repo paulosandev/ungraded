@@ -1571,6 +1571,13 @@
       },
       {
         "type": "color",
+        "id": "header_icons_background_hover_color",
+        "label": "Color de fondo de iconos (hover)",
+        "default": "#f3b30f",
+        "info": "Color de fondo cuando se pasa el cursor sobre los iconos"
+      },
+      {
+        "type": "color",
         "id": "header_icons_color",
         "label": "Color de los iconos",
         "default": "#212121",

@@ -123,7 +123,9 @@
     "logo_height_desktop": 65,
     "logo_height_tablet": 60,
     "logo_height_mobile": 35,
+    "header_icons_background_color": "#ffffff",
     "header_padding_vertical": 4,
+    "hamburger_color": "#ffffff",
     "background_pattern_image": "shopify://shop_images/ungraded-pattern.png",
     "sections": {
       "main-password-header": {
