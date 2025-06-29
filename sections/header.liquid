@@ -250,6 +250,12 @@
       "id": "menu",
       "label": "Menú de Navegación Principal",
       "default": "main-menu"
+    },
+    {
+      "type": "color",
+      "id": "header_icons_background_hover_color",
+      "label": "Color de fondo de iconos (hover)",
+      "default": "#f3b30f"
     }
   ]
 }
@@ -272,6 +278,7 @@
     --header-icons-color: {{ settings.header_icons_color | default: '#212121' }};
     --header-icons-border-radius: {{ settings.header_icons_border_radius | default: 50 }}%;
     --header-icons-hover-scale: {{ settings.header_icons_hover_scale | default: 1.1 }};
+    --header-icons-hover-background-color: {{ settings.header_icons_background_hover_color | default: '#f3b30f' }};
 
     --header-padding-vertical: {{ settings.header_padding_vertical | default: 1.0 }}rem;
     --header-padding-horizontal: {{ settings.header_padding_horizontal | default: 1.5 }}rem;
@@ -344,11 +351,10 @@
     height: var(--header-icons-size-desktop);
   }
 
-  {% if settings.header_icons_hover_effect %}
   .header-utility-icons .icon-link:hover {
     transform: scale(var(--header-icons-hover-scale));
+    background-color: var(--header-icons-hover-background-color);
   }
-  {% endif %}
 
   .header-utility-icons .icon-link svg {
     stroke: var(--header-icons-color);
@@ -375,12 +381,11 @@
     background: var(--header-icons-background-color);
   }
 
-  {% if settings.header_icons_hover_effect %}
   .search-submit-btn:hover,
   .search-close-btn:hover {
     transform: scale(var(--header-icons-hover-scale));
+    background-color: var(--header-icons-hover-background-color);
   }
-  {% endif %}
 
   .search-submit-btn svg,
   .search-close-btn svg {
@@ -389,6 +394,14 @@
 
   .search-toggle-btn {
     background: var(--header-icons-background-color);
+  }
+
+  .search-toggle-btn:hover {
+    background: var(--header-icons-hover-background-color);
+  }
+
+  .mobile-menu-toggle:hover {
+    background: var(--header-icons-hover-background-color);
   }
 
   /* Responsive - Tablet */
