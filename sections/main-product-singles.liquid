@@ -345,30 +345,7 @@
 </div>
 
 <script>
-  // Funcionalidad del formulario de producto
-  document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('product-form-singles');
-    if (form) {
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-
-        fetch('/cart/add.js', {
-          method: 'POST',
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            // Actualizar el carrito o mostrar notificación
-            window.location.href = '/cart';
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-          });
-      });
-    }
-  });
+  // Funcionalidad del formulario de producto - eliminada para usar el JavaScript general del drawer
 
   // Funcionalidad para galería de fotos
   function openPhotoGallery() {

@@ -273,6 +273,7 @@
 
     {%- if settings.cart_type == 'drawer' -%}
       {{ 'component-cart-drawer.css' | asset_url | stylesheet_tag }}
+    {{ 'custom-cart-drawer.css' | asset_url | stylesheet_tag }}
       {{ 'component-cart.css' | asset_url | stylesheet_tag }}
       {{ 'component-totals.css' | asset_url | stylesheet_tag }}
       {{ 'component-price.css' | asset_url | stylesheet_tag }}
@@ -323,7 +324,9 @@
     </a>
 
     {%- if settings.cart_type == 'drawer' -%}
-      {%- render 'cart-drawer' -%}
+      {%- render 'cart-drawer-custom' -%}
+      <script src="{{ 'simple-cart-drawer.js' | asset_url }}" defer></script>
+      <script src="{{ 'cart-subtotal-adjuster.js' | asset_url }}" defer></script>
     {%- endif -%}
 
     {% sections 'header-group' %}
