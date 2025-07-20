@@ -318,7 +318,7 @@ cart-remove-button .icon-remove {
 @media screen and (min-width: 990px) {
   .cart-item .cart-item__quantity,
   .cart-items .cart-items__heading--wide {
-    padding-left: 6rem;
+    padding-left: 1rem;
   }
 
   .cart-item__details {
@@ -334,7 +334,7 @@ cart-remove-button .icon-remove {
   .cart-items .cart-items__heading--quantity,
   .cart-item .cart-item__quantity,
   .cart-item__quantity--info quantity-popover > * {
-    padding-left: 5rem;
+    padding-left: 1rem;
   }
 
   .cart-item .cart-item__quantity--info,

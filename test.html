@@ -3,191 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sidebar de Carrito</title>
+    <title>Test - Sistema de Contador del Carrito</title>
     <style>
-        /* --- Importar una fuente similar a la del diseño (Opcional, pero recomendado) --- */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap');
-
-        /* --- Estilos base --- */
         body {
-            /* Usamos un fondo oscuro para que el sidebar blanco resalte, como en tu imagen */
-            background-color: #4a3e63;
             font-family: 'Poppins', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px;
             margin: 0;
-        }
-
-        /* --- Contenedor Principal del Sidebar --- */
-        .sidebar {
-            width: 280px;
-            background-color: #ffffff;
-            border: 3px solid #000000;
-            border-radius: 18px;
             padding: 20px;
-            text-align: center;
-            position: relative; /* Necesario para posicionar la pestaña */
-            box-sizing: border-box;
-        }
-
-        /* --- Pestaña/Notch triangular a la izquierda --- */
-        .sidebar::before {
-            content: '';
-            position: absolute;
-            top: 60px; /* Ajusta esta posición verticalmente si es necesario */
-            left: -18px; /* (grosor del borde + ancho del triangulo) */
-            width: 0;
-            height: 0;
-            border-top: 15px solid transparent;
-            border-bottom: 15px solid transparent;
-            border-right: 15px solid #000000; /* El color debe coincidir con el borde */
-        }
-
-        /* --- Sección de Subtotal --- */
-        .summary .subtotal-label {
-            font-size: 20px;
-            font-weight: 700;
-            margin: 0 0 5px 0;
-            color: #000000;
-        }
-
-        .summary .subtotal-price {
-            font-size: 24px;
-            font-weight: 700;
-            color: #D32F2F; /* Un tono de rojo similar al de la imagen */
-            margin: 0 0 20px 0;
-        }
-
-        /* --- Botón "ir al carrito" --- */
-        .summary .cart-button {
-            width: 100%;
-            background-color: #ffffff;
-            border: 2px solid #000000;
-            border-radius: 50px; /* Borde muy redondeado */
-            padding: 10px 0;
-            font-family: 'Poppins', sans-serif;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: 25px;
-            transition: background-color 0.2s, color 0.2s;
-        }
-
-        .summary .cart-button:hover {
-            background-color: #000000;
-            color: #ffffff;
-        }
-
-        /* --- Lista de productos --- */
-        .product-list {
-            display: flex;
-            flex-direction: column;
-            gap: 25px; /* Espacio entre cada elemento de producto */
+            background-color: #f5f5f5;
         }
         
-        /* --- Elemento individual de producto --- */
-        .product-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px; /* Espacio entre imagen, texto y selector */
-        }
-
-        .product-item .product-image {
-            max-width: 120px; /* Ajusta el tamaño de la imagen */
-            height: auto;
-        }
-
-        .product-item .product-name {
-            font-size: 16px;
-            font-weight: 700;
-            margin: 0;
-            color: #000000;
-        }
-
-        .product-item .product-price {
-            font-size: 15px;
-            font-weight: 500;
-            color: #333333;
-            margin: 0;
-        }
-
-        /* --- Selector de cantidad --- */
-        .quantity-selector {
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 2px solid #000000;
-            border-radius: 50px;
-            padding: 5px 10px;
-            width: 130px; /* Ancho fijo para el selector */
-            margin-top: 5px;
         }
-
-        .quantity-selector .quantity-btn {
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .cart-icon-btn {
+            position: relative;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 24px;
-            font-weight: 700;
-            padding: 0 5px;
-            color: #000000;
-        }
-
-        .quantity-selector .quantity-btn svg {
-            width: 18px;
-            height: 18px;
-            vertical-align: middle; /* Alinea el icono correctamente */
+            padding: 10px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
         }
         
-        .quantity-selector .quantity-number {
-            font-size: 18px;
-            font-weight: 700;
+        .cart-icon-btn:hover {
+            background: #f0f0f0;
+            transform: scale(1.1);
         }
-
+        
+        .cart-count-bubble {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #D32F2F;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 50%;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            z-index: 10;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+        }
+        
+        .cart-count-bubble.updated {
+            animation: cartCounterUpdate 0.6s ease-out;
+        }
+        
+        @keyframes cartCounterUpdate {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.3); background: #4CAF50; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); background: #D32F2F; }
+        }
+        
+        .test-controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .test-controls h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1976D2;
+        }
+        
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #45a049;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #da190b;
+        }
+        
+        .status {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #4CAF50;
+            margin-top: 10px;
+        }
+        
+        .cart-simulation {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .cart-simulation h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantity-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .quantity-input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="logo">Tienda Test</div>
+        <button class="cart-icon-btn" onclick="openCart()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <span class="cart-count-bubble" id="cart-count-bubble" style="display: none;">
+                <span id="cart-count">0</span>
+            </span>
+        </button>
+    </div>
 
-    <div class="sidebar">
-
-        <div class="summary">
-            <p class="subtotal-label">Subtotal</p>
-            <p class="subtotal-price">$2811.00</p>
-            <button class="cart-button">ir al carrito</button>
+    <div class="test-controls">
+        <h2>Pruebas del Sistema de Contador del Carrito</h2>
+        <p>Usa estos botones para simular acciones del carrito y ver cómo se actualiza el contador automáticamente:</p>
+        
+        <div class="button-group">
+            <button class="btn btn-success" onclick="addToCart()">Añadir Producto</button>
+            <button class="btn btn-danger" onclick="removeFromCart()">Eliminar Producto</button>
+            <button class="btn btn-danger" onclick="clearCart()">Vaciar Carrito</button>
+            <button class="btn btn-primary" onclick="updateCounter()">Actualizar Contador</button>
         </div>
-
-        <div class="product-list">
-
-            <div class="product-item">
-                <img src="https://i.imgur.com/2s42b7M.png" alt="Colección de Sobres" class="product-image">
-                <p class="product-name">Colección de Sobres</p>
-                <p class="product-price">$2811.00 MXN</p>
-                <div class="quantity-selector">
-                    <button class="quantity-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path></svg>
-                    </button>
-                    <span class="quantity-number">1</span>
-                    <button class="quantity-btn">+</button>
-                </div>
-            </div>
-            
-            <div class="product-item">
-                <img src="https://i.imgur.com/7bYPC4k.png" alt="Sobre Individual" class="product-image">
-                <p class="product-name">Sobre Individual</p>
-                <p class="product-price">$150.00 MXN</p>
-                <div class="quantity-selector">
-                    <button class="quantity-btn">
-                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path></svg>
-                    </button>
-                    <span class="quantity-number">3</span>
-                    <button class="quantity-btn">+</button>
-                </div>
-            </div>
-
+        
+        <div class="status" id="status">
+            Estado: Carrito vacío (0 productos)
         </div>
     </div>
-    </body>
+
+    <div class="cart-simulation">
+        <h2>Simulación del Carrito</h2>
+        <div id="cart-items">
+            <p>El carrito está vacío</p>
+        </div>
+    </div>
+
+    <script>
+        // Simulación del sistema de contador del carrito
+        let cartData = {
+            items: [],
+            item_count: 0,
+            total_price: 0
+        };
+
+        // Simulación de la clase CartCounterManager
+        class CartCounterManager {
+            constructor() {
+                this.isUpdating = false;
+                this.updateQueue = [];
+                this.init();
+            }
+
+            init() {
+                this.updateCounter();
+            }
+
+            updateCounter() {
+                if (this.isUpdating) {
+                    this.updateQueue.push(Date.now());
+                    return;
+                }
+
+                this.isUpdating = true;
+                
+                // Simular fetch de cart.js
+                setTimeout(() => {
+                    this.updateAllCounterElements(cartData);
+                    this.isUpdating = false;
+                    
+                    if (this.updateQueue.length > 0) {
+                        this.updateQueue = [];
+                        setTimeout(() => this.updateCounter(), 100);
+                    }
+                }, 100);
+            }
+
+            updateAllCounterElements(cart) {
+                const itemCount = cart.item_count || 0;
+                
+                // Actualizar contador
+                const countElement = document.getElementById('cart-count');
+                if (countElement) {
+                    countElement.textContent = itemCount;
+                }
+
+                // Actualizar visibilidad del bubble
+                const bubble = document.getElementById('cart-count-bubble');
+                if (bubble) {
+                    if (itemCount > 0) {
+                        bubble.style.display = 'flex';
+                        bubble.classList.add('updated');
+                        setTimeout(() => bubble.classList.remove('updated'), 600);
+                    } else {
+                        bubble.style.display = 'none';
+                    }
+                }
+
+                // Actualizar status
+                const status = document.getElementById('status');
+                if (status) {
+                    status.textContent = `Estado: ${itemCount > 0 ? `${itemCount} producto(s) en el carrito` : 'Carrito vacío (0 productos)'}`;
+                }
+
+                // Actualizar vista del carrito
+                this.updateCartView(cart);
+
+                // Disparar evento personalizado
+                document.dispatchEvent(new CustomEvent('cart:counter-updated', {
+                    detail: { itemCount: itemCount, cart: cart }
+                }));
+            }
+
+            updateCartView(cart) {
+                const cartItems = document.getElementById('cart-items');
+                if (cart.items.length === 0) {
+                    cartItems.innerHTML = '<p>El carrito está vacío</p>';
+                } else {
+                    cartItems.innerHTML = cart.items.map((item, index) => `
+                        <div class="cart-item">
+                            <div>
+                                <strong>${item.name}</strong><br>
+                                <small>$${item.price.toFixed(2)}</small>
+                            </div>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="changeQuantity(${index}, -1)">-</button>
+                                <input type="number" class="quantity-input" value="${item.quantity}" readonly>
+                                <button class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            forceUpdate() {
+                this.isUpdating = false;
+                this.updateCounter();
+            }
+        }
+
+        // Instanciar el manager
+        const cartCounterManager = new CartCounterManager();
+
+        // Funciones de prueba
+        function addToCart() {
+            const products = [
+                { name: 'Producto 1', price: 25.99 },
+                { name: 'Producto 2', price: 15.50 },
+                { name: 'Producto 3', price: 45.00 }
+            ];
+            
+            const product = products[Math.floor(Math.random() * products.length)];
+            
+            // Buscar si el producto ya existe
+            const existingItem = cartData.items.find(item => item.name === product.name);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cartData.items.push({
+                    ...product,
+                    quantity: 1
+                });
+            }
+            
+            cartData.item_count = cartData.items.reduce((sum, item) => sum + item.quantity, 0);
+            cartData.total_price = cartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            cartCounterManager.updateCounter();
+            
+            // Disparar evento personalizado
+            document.dispatchEvent(new CustomEvent('cart:add', { detail: product }));
+        }
+
+        function removeFromCart() {
+            if (cartData.items.length === 0) return;
+            
+            const randomIndex = Math.floor(Math.random() * cartData.items.length);
+            const item = cartData.items[randomIndex];
+            
+            if (item.quantity > 1) {
+                item.quantity -= 1;
+            } else {
+                cartData.items.splice(randomIndex, 1);
+            }
+            
+            cartData.item_count = cartData.items.reduce((sum, item) => sum + item.quantity, 0);
+            cartData.total_price = cartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            cartCounterManager.updateCounter();
+            
+            // Disparar evento personalizado
+            document.dispatchEvent(new CustomEvent('cart:remove', { detail: item }));
+        }
+
+        function clearCart() {
+            cartData.items = [];
+            cartData.item_count = 0;
+            cartData.total_price = 0;
+            
+            cartCounterManager.updateCounter();
+            
+            // Disparar evento personalizado
+            document.dispatchEvent(new CustomEvent('cart:clear', { detail: cartData }));
+        }
+
+        function updateCounter() {
+            cartCounterManager.forceUpdate();
+        }
+
+        function changeQuantity(index, change) {
+            const item = cartData.items[index];
+            if (!item) return;
+            
+            item.quantity = Math.max(1, item.quantity + change);
+            
+            cartData.item_count = cartData.items.reduce((sum, item) => sum + item.quantity, 0);
+            cartData.total_price = cartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            cartCounterManager.updateCounter();
+        }
+
+        function openCart() {
+            alert(`Carrito abierto!\nProductos: ${cartData.item_count}\nTotal: $${cartData.total_price.toFixed(2)}`);
+        }
+
+        // Escuchar eventos del carrito
+        document.addEventListener('cart:counter-updated', (e) => {
+            console.log('Contador actualizado:', e.detail.itemCount);
+        });
+
+        document.addEventListener('cart:add', (e) => {
+            console.log('Producto añadido:', e.detail);
+        });
+
+        document.addEventListener('cart:remove', (e) => {
+            console.log('Producto eliminado:', e.detail);
+        });
+
+        document.addEventListener('cart:clear', (e) => {
+            console.log('Carrito vaciado');
+        });
+    </script>
+</body>
 </html>

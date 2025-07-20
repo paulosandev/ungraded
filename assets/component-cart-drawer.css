@@ -185,6 +185,7 @@ cart-drawer {
 }
 
 cart-drawer-items {
+  background-color: white;
   overflow: auto;
   flex: 1;
 }

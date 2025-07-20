@@ -1,27 +1,39 @@
 /* JavaScript simplificado para el carrito drawer */
 
+// Check if unified cart system is active - if so, disable this script
+if (window.UNIFIED_CART_ACTIVE) {
+  console.log('🚫 Simple cart drawer disabled - unified system active');
+  return;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-  // Función para actualizar el contador del carrito
+  // Función para actualizar el contador del carrito usando el nuevo sistema
   function updateCartCount() {
-    fetch('/cart.js')
-      .then(response => response.json())
-      .then(cart => {
-        const cartCountElement = document.querySelector('#cart-count');
-        const cartCountBubble = document.querySelector('.cart-count-bubble');
-        
-        if (cartCountElement && cartCountBubble) {
-          cartCountElement.textContent = cart.item_count;
+    // Usar el nuevo CartCounterManager si está disponible
+    if (window.cartCounterManager) {
+      window.cartCounterManager.updateCounter();
+    } else {
+      // Fallback al sistema anterior si el manager no está disponible
+      fetch('/cart.js')
+        .then(response => response.json())
+        .then(cart => {
+          const cartCountElement = document.querySelector('#cart-count');
+          const cartCountBubble = document.querySelector('.cart-count-bubble');
           
-          if (cart.item_count > 0) {
-            cartCountBubble.style.display = 'flex';
-          } else {
-            cartCountBubble.style.display = 'none';
+          if (cartCountElement && cartCountBubble) {
+            cartCountElement.textContent = cart.item_count;
+            
+            if (cart.item_count > 0) {
+              cartCountBubble.style.display = 'flex';
+            } else {
+              cartCountBubble.style.display = 'none';
+            }
           }
-        }
-      })
-      .catch(error => {
-        console.error('Error updating cart count:', error);
-      });
+        })
+        .catch(error => {
+          console.error('Error updating cart count:', error);
+        });
+    }
   }
 
   // Función para refrescar el contenido del drawer
@@ -58,6 +70,12 @@ document.addEventListener('DOMContentLoaded', function() {
               
               // Actualizar el subtotal en el header
               updateSubtotal(cart.total_price);
+              
+              // Disparar evento personalizado para que el CartCounterManager actualice
+              document.dispatchEvent(new CustomEvent('cart:drawer-updated', { detail: cart }));
+            })
+            .catch(error => {
+              console.error('Error fetching cart data:', error);
             });
         }
 
@@ -106,8 +124,15 @@ document.addEventListener('DOMContentLoaded', function() {
         method: 'POST',
         body: formData
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
+        console.log('Product added to cart:', data);
+        
         // Refrescar el contenido del drawer
         refreshDrawerContent().then(() => {
           // Abrir el drawer después de añadir el producto
@@ -117,6 +142,9 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Mostrar notificación
           showNotification(`${data.product_title} añadido al carrito`, 'success');
+          
+          // Disparar evento personalizado
+          document.dispatchEvent(new CustomEvent('cart:add', { detail: data }));
         });
       })
       .catch(error => {
@@ -137,16 +165,37 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `;
     
+    // Aplicar estilos
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#4CAF50' : '#f44336'};
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 10002;
+      transform: translateX(100%);
+      opacity: 0;
+      transition: all 0.3s ease;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+    
     document.body.appendChild(notification);
     
     // Mostrar notificación
     setTimeout(() => {
-      notification.classList.add('cart-notification--visible');
+      notification.style.transform = 'translateX(0)';
+      notification.style.opacity = '1';
     }, 100);
     
     // Ocultar notificación después de 3 segundos
     setTimeout(() => {
-      notification.classList.remove('cart-notification--visible');
+      notification.style.transform = 'translateX(100%)';
+      notification.style.opacity = '0';
       setTimeout(() => {
         if (notification.parentNode) {
           document.body.removeChild(notification);
@@ -155,65 +204,83 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 3000);
   }
 
+  // Mejorar el sistema de eventos para la eliminación de productos
+  document.addEventListener('click', function(e) {
+    // Solo interceptar si no hay custom cart drawer enhancer activo
+    if (window.cartDrawerEnhancer) {
+      return; // Dejar que custom-cart-drawer.js maneje los clicks
+    }
+    
+    // Interceptar clicks en botones de eliminar/quantity
+    if (e.target.matches('button[name="minus"]') || e.target.closest('button[name="minus"]')) {
+      const button = e.target.closest('button[name="minus"]');
+      const quantityInput = button.closest('quantity-input');
+      const input = quantityInput ? quantityInput.querySelector('input[name="updates[]"]') : null;
+      
+      if (input) {
+        const currentValue = parseInt(input.value) || 0;
+        console.log('Minus button clicked, current value:', currentValue);
+        
+        // Actualizar contador después de un breve delay si la cantidad será 0
+        if (currentValue === 1) {
+          setTimeout(() => {
+            console.log('Product will be removed, forcing counter update');
+            updateCartCount();
+          }, 300);
+        }
+      }
+    }
+  });
+
+  // Mejorar el sistema de eventos para cambios en quantity inputs
+  document.addEventListener('change', function(e) {
+    // Solo interceptar si no hay custom cart drawer enhancer activo
+    if (window.cartDrawerEnhancer) {
+      return; // Dejar que custom-cart-drawer.js maneje los cambios
+    }
+    
+    if (e.target.matches('input[name="updates[]"]')) {
+      const input = e.target;
+      const newValue = parseInt(input.value) || 0;
+      console.log('Quantity input changed:', newValue);
+      
+      // Actualizar contador después de un breve delay
+      setTimeout(() => {
+        updateCartCount();
+      }, 200);
+    }
+  });
+
+  // Escuchar eventos del contador para mejor debugging
+  document.addEventListener('cart:counter-updated', function(e) {
+    console.log('Cart counter updated via event:', e.detail.itemCount);
+  });
+
+  // Escuchar eventos de eliminación de productos
+  document.addEventListener('cart:remove', function(e) {
+    console.log('Product removed from cart:', e.detail);
+    showNotification('Producto eliminado del carrito', 'info');
+  });
+
+  // Escuchar eventos de adición de productos
+  document.addEventListener('cart:add', function(e) {
+    console.log('Product added to cart:', e.detail);
+  });
+
+  // Escuchar eventos de actualización del drawer
+  document.addEventListener('cart:drawer-updated', function(e) {
+    console.log('Cart drawer updated:', e.detail);
+  });
+
   // Inicializar el contador del carrito
   updateCartCount();
-});
-
-// Estilos para las notificaciones
-const notificationStyles = `
-  .cart-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 10000;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-    min-width: 320px;
-    max-width: 400px;
-  }
-
-  .cart-notification--visible {
-    transform: translateX(0);
-  }
-
-  .cart-notification__content {
-    display: flex;
-    align-items: center;
-    padding: 16px 20px;
-    gap: 12px;
-  }
-
-  .cart-notification__icon {
-    font-size: 1.2rem;
-    color: #10b981;
-    font-weight: bold;
-  }
-
-  .cart-notification--error .cart-notification__icon {
-    color: #ef4444;
-  }
-
-  .cart-notification__message {
-    font-size: 0.9rem;
-    color: #374151;
-    font-weight: 500;
-    flex: 1;
-  }
-
-  @media (max-width: 768px) {
-    .cart-notification {
-      right: 10px;
-      left: 10px;
-      min-width: auto;
-      max-width: none;
+  
+  // Verificar periódicamente el estado del carrito
+  setInterval(() => {
+    const cartDrawer = document.querySelector('cart-drawer');
+    if (cartDrawer && !cartDrawer.classList.contains('is-empty')) {
+      // Solo actualizar si el drawer no está vacío
+      updateCartCount();
     }
-  }
-`;
-
-// Agregar estilos al documento
-const styleSheet = document.createElement('style');
-styleSheet.textContent = notificationStyles;
-document.head.appendChild(styleSheet); 
+  }, 5000); // Cada 5 segundos
+}); 
