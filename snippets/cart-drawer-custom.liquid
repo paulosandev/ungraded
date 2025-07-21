@@ -19,7 +19,7 @@
   }
 </style>
 
-<cart-drawer class="drawer{% if cart == empty %} is-empty{% endif %}" {% if cart == empty %}style="background-color: #ffffff !important;"{% endif %}>
+<cart-drawer class="drawer{% if cart == empty %} is-empty{% endif %}">
   <div id="CartDrawer" class="cart-drawer">
     <div id="CartDrawer-Overlay" class="cart-drawer__overlay"></div>
     <div
@@ -174,10 +174,10 @@
                 <div class="empty-cart-icon">
                   🛒
                 </div>
-                <h2 class="empty-cart-title">Tu carrito está vacío</h2>
+                <h2 class="empty-cart-title tanker-font">CARRITO VACÍO</h2>
                 <p class="empty-cart-message">Añade algunos productos para comenzar a comprar</p>
                 <a href="{{ routes.all_products_collection_url }}" class="continue-shopping-btn">
-                  Continuar comprando
+                  CONTINUAR COMPRANDO
                 </a>
               </div>
             {%- endif -%}

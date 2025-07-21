@@ -1,7 +1,8 @@
 /* Estilos personalizados para el carrito lateral - Diseño moderno */
 
-/* Importar fuente Poppins */
+/* Importar fuentes Poppins y Oswald (alternativa a Tanker) */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap');
 
 /* Botón del carrito en el header */
 .cart-icon-btn {
@@ -531,23 +532,27 @@ cart-drawer .cart-drawer__empty-content {
   z-index: 3;
 }
 
-/* Overlay blanco para carrito vacío - Superpone todo el fondo */
-cart-drawer .cart-drawer__empty-overlay {
-  position: absolute;
+/* Overlay blanco para carrito vacío - Superpone completamente el gradiente */
+cart-drawer.is-empty .cart-drawer__empty-overlay {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-color: #ffffff;
-  z-index: 1;
+  z-index: 999;
   border-radius: 15px;
   margin: 10px;
   border: 3px solid #000000;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
 }
 
-/* Asegurar fondo blanco cuando el carrito está vacío */
+/* Asegurar que solo se aplique cuando esté vacío */
 cart-drawer.is-empty .drawer__inner {
+  background: #ffffff !important;
   background-color: #ffffff !important;
+  background-image: none !important;
   border: 3px solid #000000;
   border-radius: 15px;
   position: relative;
@@ -557,7 +562,7 @@ cart-drawer.is-empty .drawer__contents {
   background-color: transparent !important;
   border-radius: 12px;
   position: relative;
-  z-index: 2;
+  z-index: 1000;
 }
 
 /* Ocultar header cuando está vacío */
@@ -572,11 +577,24 @@ cart-drawer .empty-cart-icon {
 }
 
 cart-drawer .empty-cart-title {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   margin-bottom: 15px;
   color: #000000;
   font-family: 'Poppins', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+/* Estilo específico para fuente alternativa (Oswald) */
+cart-drawer .empty-cart-title.tanker-font {
+  font-family: 'Oswald', 'Arial Black', sans-serif !important;
+  font-size: 36px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  color: #000000 !important;
+  display: block !important;
+  visibility: visible !important;
 }
 
 cart-drawer .empty-cart-message {
