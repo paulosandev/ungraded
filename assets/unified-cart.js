@@ -45,6 +45,9 @@ class UnifiedCartManager {
     // Observe cart changes
     this.observeCartChanges();
     
+    // Detect product stock on page load
+    this.detectProductStock();
+    
     console.log('✅ Unified Cart System ready!');
   }
 
@@ -455,9 +458,18 @@ class UnifiedCartManager {
 
   setupFormHandlers() {
     // Handle add to cart forms
-    document.addEventListener('submit', (event) => {
+    document.addEventListener('submit', async (event) => {
       if (event.target.matches('form[action*="/cart/add"]')) {
         event.preventDefault();
+        
+        console.log('🛒 Add to cart form intercepted by unified cart');
+        
+        // Validate stock before adding to cart
+        const isStockValid = await this.validateStock(event.target);
+        if (!isStockValid) {
+          console.log('❌ Stock validation failed, blocking add to cart');
+          return;
+        }
         
         const formData = new FormData(event.target);
         
@@ -589,6 +601,385 @@ class UnifiedCartManager {
         }
       }, 400);
     }, 4000);
+  }
+
+  async validateStock(form) {
+    console.log('🔍 Validating stock before adding to cart...');
+    
+    try {
+      const formData = new FormData(form);
+      const variantId = formData.get('id');
+      const requestedQuantity = parseInt(formData.get('quantity') || '1');
+      
+      console.log('📊 Stock validation params:', { variantId, requestedQuantity });
+      
+      // Get current cart to check existing quantity
+      const cartResponse = await fetch('/cart.js');
+      const cart = await cartResponse.json();
+      
+      // Find existing quantity of this variant in cart
+      const existingCartItem = cart.items.find(item => item.variant_id == variantId);
+      const currentCartQuantity = existingCartItem ? existingCartItem.quantity : 0;
+      
+      // Get variant information - prioritize Liquid data if available
+      let variantInventory = 0;
+      let productTitle = '';
+      let inventoryPolicy = 'continue'; // Default to allow sales
+      let inventoryManagement = null;
+      
+      // Try to use Liquid inventory data first (most reliable)
+      if (typeof window.allVariantsInventoryData !== 'undefined' && window.allVariantsInventoryData[variantId]) {
+        const liquidVariantData = window.allVariantsInventoryData[variantId];
+        variantInventory = liquidVariantData.inventory_quantity || 0;
+        inventoryPolicy = liquidVariantData.inventory_policy || 'continue';
+        inventoryManagement = liquidVariantData.inventory_management;
+        
+        // Get product title from current product data if available
+        if (typeof window.productInventoryData !== 'undefined') {
+          productTitle = window.productInventoryData.product_title || 'Producto';
+        }
+        
+        console.log('✅ Using Liquid variant data:', {
+          variantInventory,
+          inventoryPolicy,
+          inventoryManagement,
+          productTitle,
+          source: 'Liquid template'
+        });
+      } else {
+        // Fallback to API endpoints if Liquid data not available
+        console.log('🔍 Liquid data not available, fetching from API endpoints...');
+        console.log('🔍 Using products.json as primary source (variants.js doesn\'t include inventory data)');
+        
+        try {
+          // Use products.json as primary source since variants.js lacks inventory data
+          const productsResponse = await fetch(`/products.json`);
+          
+          if (!productsResponse.ok) {
+            throw new Error(`Products endpoint returned ${productsResponse.status}`);
+          }
+          
+          const productsData = await productsResponse.json();
+          console.log('📦 Products.json response:', {
+            totalProducts: productsData.products?.length || 0,
+            searchingForVariant: variantId
+          });
+          
+          // Find the variant in all products
+          let foundVariant = null;
+          let foundProduct = null;
+          for (const product of productsData.products) {
+            const variant = product.variants.find(v => v.id == variantId);
+            if (variant) {
+              foundVariant = variant;
+              foundProduct = product;
+              
+              console.log('📊 FULL VARIANT DATA FROM PRODUCTS.JSON:', {
+                productTitle: product.title,
+                variantId: variant.id,
+                variantTitle: variant.title,
+                inventory_quantity: variant.inventory_quantity,
+                inventory_policy: variant.inventory_policy,
+                inventory_management: variant.inventory_management,
+                available: variant.available,
+                FULL_VARIANT_OBJECT: variant,
+                ALL_VARIANT_KEYS: Object.keys(variant),
+                VARIANT_WITH_ALL_PROPERTIES: JSON.stringify(variant, null, 2)
+              });
+              
+              // Use the actual inventory data from products.json
+              variantInventory = variant.inventory_quantity !== null && variant.inventory_quantity !== undefined ? 
+                                variant.inventory_quantity : 0;
+              productTitle = product.title;
+              inventoryPolicy = variant.inventory_policy || 'continue';
+              inventoryManagement = variant.inventory_management;
+              
+              console.log('✅ Processed variant data from products.json:', { 
+                variantInventory, 
+                productTitle, 
+                inventoryPolicy, 
+                inventoryManagement,
+                rawInventoryQuantity: variant.inventory_quantity,
+                isInventoryQuantityNull: variant.inventory_quantity === null,
+                isInventoryQuantityUndefined: variant.inventory_quantity === undefined,
+                typeOfInventoryQuantity: typeof variant.inventory_quantity
+              });
+              break;
+            }
+          }
+          
+          if (!foundVariant) {
+            console.error('❌ Variant not found in products.json for ID:', variantId);
+            console.log('🔍 Available variant IDs in products.json:', 
+              productsData.products.flatMap(p => p.variants.map(v => v.id)).slice(0, 10)
+            );
+            throw new Error(`Variant ${variantId} not found in products.json`);
+          }
+        } catch (productsError) {
+          console.warn('⚠️ Products.json failed, trying variants.js as last resort:', productsError.message);
+          // Last resort: try variants.js (but it usually lacks inventory data)
+          console.log('🔍 Trying variants.js as last resort...');
+          const variantResponse = await fetch(`/variants/${variantId}.js`);
+          
+          if (!variantResponse.ok) {
+            throw new Error(`Variant endpoint returned ${variantResponse.status}`);
+          }
+          
+          const variantData = await variantResponse.json();
+          console.log('📊 VARIANT DATA FROM VARIANTS.JS (limited):', variantData);
+          
+          // Use what data we can get (usually limited)
+          variantInventory = variantData.inventory_quantity !== null && variantData.inventory_quantity !== undefined ? 
+                            variantData.inventory_quantity : 0;
+          productTitle = variantData.product_title || 'Producto';
+          inventoryPolicy = variantData.inventory_policy || 'continue';
+          inventoryManagement = variantData.inventory_management;
+          
+          console.log('⚠️ Using limited data from variants.js:', {
+            variantInventory,
+            productTitle, 
+            inventoryPolicy,
+            inventoryManagement
+          });
+        } // End of products.json try-catch
+      } // End of else clause for API fallback
+      
+      const totalRequestedQuantity = currentCartQuantity + requestedQuantity;
+      
+      console.log('📊 Stock validation data:', {
+        variantInventory,
+        currentCartQuantity,
+        requestedQuantity,
+        totalRequestedQuantity,
+        productTitle,
+        inventoryPolicy,
+        inventoryManagement
+      });
+      
+      
+      // Legacy code (won't execute due to missing inventory data)
+      if (inventoryManagement) {
+        console.log('🔍 Inventory tracking is enabled, checking stock limits...');
+        
+        if (inventoryPolicy === 'deny') {
+          console.log('📋 Inventory policy: DENY - strict stock validation');
+          
+          // Check if total requested quantity exceeds available inventory
+          if (totalRequestedQuantity > variantInventory) {
+            const availableToAdd = Math.max(0, variantInventory - currentCartQuantity);
+            
+            if (variantInventory === 0) {
+              // Product has no stock at all
+              this.showStockMessage(`"${productTitle}" no tiene stock disponible.`);
+            } else if (availableToAdd === 0) {
+              // Product has stock but user already has max quantity in cart
+              this.showStockMessage(`Ya tienes la cantidad máxima disponible de "${productTitle}" en tu carrito.`);
+            } else {
+              // Product has some stock but not enough for requested quantity
+              this.showStockMessage(`Solo puedes añadir ${availableToAdd} unidad(es) más de "${productTitle}". Stock disponible: ${variantInventory}, en carrito: ${currentCartQuantity}`);
+            }
+            
+            return false;
+          }
+        } else {
+          console.log('📋 Inventory policy: CONTINUE - allowing overselling but warning if stock is low');
+          
+          // SMART OVERSELLING CONTROL
+          // Even with 'continue' policy, implement reasonable limits and warnings
+          
+          // Case 1: Use real inventory data for proper validation
+          if (variantInventory === 0) {
+            // When inventory shows 0, check if sales are allowed (continue policy)
+            if (inventoryPolicy === 'continue') {
+              console.log('✅ No inventory but sales continue policy - allowing purchase');
+            } else {
+              this.showStockMessage(`"${productTitle}" no tiene stock disponible.`);
+              return false;
+            }
+          }
+          // Case 2: Limited stock available
+          else if (variantInventory > 0 && totalRequestedQuantity > variantInventory) {
+            // Allow reasonable overselling (up to 2x available stock)
+            const MAX_OVERSELL_MULTIPLIER = 2;
+            const maxAllowedQuantity = Math.max(variantInventory * MAX_OVERSELL_MULTIPLIER, 3);
+            
+            if (totalRequestedQuantity > maxAllowedQuantity) {
+              this.showStockMessage(
+                `Stock limitado de "${productTitle}". ` +
+                `Solo ${variantInventory} unidades disponibles. ` +
+                `Máximo ${maxAllowedQuantity} unidades por cliente. ` +
+                `Actualmente tienes ${currentCartQuantity} en tu carrito.`
+              );
+              console.log(`❌ OVERSELLING BLOCKED - Max ${maxAllowedQuantity} units allowed (2x stock rule)`);
+              return false;
+            } else {
+              // Show warning but allow overselling within limits
+              this.showStockMessage(
+                `⚠️ Stock limitado: Solo ${variantInventory} unidades de "${productTitle}" disponibles. ` +
+                `Tu pedido se procesará por orden de llegada.`
+              );
+              console.log(`⚠️ CONTROLLED OVERSELLING - ${totalRequestedQuantity}/${maxAllowedQuantity} units allowed`);
+            }
+          }
+          // Case 3: Stock available, no issues
+          else {
+            console.log('✅ Sufficient stock available');
+          }
+        }
+          } else {
+            console.log('✅ No inventory tracking enabled - unlimited sales allowed');
+          }
+      
+      console.log('✅ Stock validation passed');
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Error validating stock:', error);
+      this.showStockMessage('Error al validar el stock. Por favor, intenta de nuevo.');
+      return false;
+    }
+  }
+  
+  detectProductStock() {
+    // Only run on product pages
+    if (!window.location.pathname.includes('/products/')) {
+      console.log('📍 Not on a product page, skipping stock detection');
+      return;
+    }
+    
+console.log('🔍 DETECTING PRODUCT STOCK ON PAGE LOAD - VERSION 2.0 WITH RETRY MECHANISM');
+    
+    // Wait for inventory data to be available from Liquid template
+    this.waitForInventoryData();
+  }
+  
+  waitForInventoryData(attempts = 0) {
+    const maxAttempts = 50; // Wait up to 2.5 seconds
+    const retryInterval = 50; // Check every 50ms
+    
+    // Check if inventory data is available from Liquid template
+    if (typeof window.productInventoryData !== 'undefined') {
+      console.log('✅ Inventory data is now available, proceeding with stock detection');
+      this.processProductStock();
+      return;
+    }
+    
+    if (attempts < maxAttempts) {
+      console.log(`⏳ Waiting for inventory data... attempt ${attempts + 1}/${maxAttempts}`);
+      setTimeout(() => this.waitForInventoryData(attempts + 1), retryInterval);
+    } else {
+      console.log('❌ No inventory data available from template after maximum wait time');
+    }
+  }
+  
+  processProductStock() {
+    
+    const stockData = window.productInventoryData;
+    console.log('📊 INVENTORY DATA FROM LIQUID TEMPLATE:', stockData);
+    
+    // Log detailed stock analysis
+    console.log('📈 CURRENT PRODUCT STOCK ANALYSIS:');
+    console.log('🆔  Variant ID:', stockData.variant_id);
+    console.log('🏷️  Product:', stockData.product_title);
+    console.log('🔢  Stock Quantity:', stockData.inventory_quantity);
+    console.log('📋  Inventory Policy:', stockData.inventory_policy);
+    console.log('⚙️  Inventory Management:', stockData.inventory_management);
+    console.log('✅  Available:', stockData.available);
+    console.log('🎯  Data Source: Liquid template (server-side)');
+    
+    // Determine effective stock limit
+    let effectiveStockLimit = null;
+    if (stockData.inventory_management === 'shopify' && 
+        stockData.inventory_quantity !== null && 
+        stockData.inventory_quantity !== undefined) {
+      effectiveStockLimit = stockData.inventory_quantity;
+      console.log(`🎯 EFFECTIVE STOCK LIMIT: ${effectiveStockLimit} units`);
+      
+      if (effectiveStockLimit === 0) {
+        console.log('🚨 PRODUCT OUT OF STOCK');
+        if (stockData.inventory_policy === 'continue') {
+          console.log('✅ But sales can continue (backorder allowed)');
+        } else {
+          console.log('❌ Sales stopped (no backorder)');
+        }
+      } else if (effectiveStockLimit <= 5) {
+        console.log('⚠️ LOW STOCK WARNING - Limited quantity available');
+      } else {
+        console.log('✅ Good stock levels');
+      }
+    } else {
+      console.log('⚠️ No inventory tracking enabled - unlimited sales allowed');
+    }
+    
+    // Store the effective stock limit globally for use in validation
+    if (effectiveStockLimit !== null) {
+      window.currentProductStockLimit = effectiveStockLimit;
+      console.log(`💾 Stored global stock limit: ${effectiveStockLimit}`);
+    }
+    
+    // Also log all variants data if available
+    if (typeof window.allVariantsInventoryData !== 'undefined') {
+      console.log('📦 ALL VARIANTS INVENTORY DATA:', window.allVariantsInventoryData);
+    }
+  }
+  
+  getRealStockFromCSV(variantId) {
+    // Map variant IDs to their real stock based on CSV data
+    const stockMap = {
+      '46925180240029': 2, // Scarlett & Violet: White Flare - Elite Trainer Box
+      '46935041999005': 0, // Scarlett & Violet: White Flare - Elite Trainer Box (Copia)
+      // Add more mappings based on your CSV data
+    };
+    
+    return stockMap[variantId] !== undefined ? stockMap[variantId] : null;
+  }
+  
+  showStockMessage(message) {
+    console.log('📢 Showing stock message:', message);
+    
+    // Find or create message container on product form
+    let messageContainer = document.querySelector('#stock-message-container');
+    if (!messageContainer) {
+      // Create container near the add to cart button
+      const addButton = document.querySelector('button[name="add"], .btn--add-to-cart, [type="submit"][name="add"]');
+      if (addButton) {
+        messageContainer = document.createElement('div');
+        messageContainer.id = 'stock-message-container';
+        messageContainer.style.marginTop = '10px';
+        addButton.parentNode.insertBefore(messageContainer, addButton.nextSibling);
+      }
+    }
+    
+    if (messageContainer) {
+      messageContainer.innerHTML = `
+        <div class="stock-validation-message" style="
+          background-color: #fff3cd;
+          border: 1px solid #ffeaa7;
+          border-radius: 6px;
+          padding: 12px 16px;
+          color: #856404;
+          font-size: 14px;
+          margin: 10px 0;
+          display: flex;
+          align-items: center;
+          font-family: inherit;
+          line-height: 1.4;
+        ">
+          <span style="margin-right: 8px; font-size: 16px;">⚠️</span>
+          <span>${message}</span>
+        </div>
+      `;
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        if (messageContainer && messageContainer.querySelector('.stock-validation-message')) {
+          messageContainer.innerHTML = '';
+        }
+      }, 5000);
+    } else {
+      // Fallback to toast notification
+      this.showNotification(message, 'warning');
+    }
   }
 
   showNotification(message, type = 'success') {

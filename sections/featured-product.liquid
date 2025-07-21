@@ -201,13 +201,9 @@
                           data-cart-quantity="{{ cart_qty }}"
                           data-min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
                           min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
-                          {%- comment -%} Exponer el inventario disponible para limitar la cantidad máxima desde JS {%- endcomment -%}
-                          data-max-inventory="{{ product.selected_or_first_available_variant.inventory_quantity }}"
                           {% if product.selected_or_first_available_variant.quantity_rule.max != null %}
                             data-max="{{ product.selected_or_first_available_variant.quantity_rule.max }}"
                             max="{{ product.selected_or_first_available_variant.quantity_rule.max }}"
-                          {%- elsif product.selected_or_first_available_variant.inventory_quantity != null and product.selected_or_first_available_variant.inventory_quantity > 0 -%}
-                            max="{{ product.selected_or_first_available_variant.inventory_quantity }}"
                           {% endif %}
                           step="{{ product.selected_or_first_available_variant.quantity_rule.increment }}"
                           value="{{ product.selected_or_first_available_variant.quantity_rule.min }}"

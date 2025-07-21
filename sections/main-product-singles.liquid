@@ -44,6 +44,16 @@
                   </div>
 
                 {%- when 'buy_buttons' -%}
+                  {% comment %} Calculate current cart quantity for this variant {% endcomment %}
+                  {% assign cart_qty = cart | item_count_for_variant: product.selected_or_first_available_variant.id %}
+                  {% assign max_inventory = product.selected_or_first_available_variant.inventory_quantity %}
+                  {% assign is_at_max_inventory = false %}
+                  
+                  {% comment %} Check if cart quantity equals or exceeds inventory {% endcomment %}
+                  {% if cart_qty >= max_inventory and max_inventory > 0 %}
+                    {% assign is_at_max_inventory = true %}
+                  {% endif %}
+                  
                   <div class="singles-product-buttons" {{ block.shopify_attributes }}>
                     {%- form 'product', product, id: 'product-form-singles', class: 'form' -%}
                       <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
@@ -51,13 +61,32 @@
                         type="submit"
                         name="add"
                         class="singles-add-to-cart-btn"
-                        {% if product.selected_or_first_available_variant.available == false %}
+                        id="singles-add-btn-{{ product.selected_or_first_available_variant.id }}"
+                        data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+                        data-max-inventory="{{ max_inventory }}"
+                        data-current-cart-qty="{{ cart_qty }}"
+                        {% if product.selected_or_first_available_variant.available == false or is_at_max_inventory %}
                           disabled
                         {% endif %}
                       >
-                        <span>AGREGAR AL CARRITO</span>
+                        <span class="btn-text">
+                          {% if product.selected_or_first_available_variant.available == false %}
+                            AGOTADO
+                          {% elsif is_at_max_inventory %}
+                            MÁXIMO EN CARRITO
+                          {% else %}
+                            AGREGAR AL CARRITO
+                          {% endif %}
+                        </span>
                       </button>
                     {%- endform -%}
+                    
+                    {% comment %} Show stock status message {% endcomment %}
+                    {% if is_at_max_inventory %}
+                      <div class="singles-stock-warning">
+                        Ya tienes {{ cart_qty }} de {{ max_inventory }} unidades en tu carrito
+                      </div>
+                    {% endif %}
                   </div>
 
                 {%- when 'stock' -%}

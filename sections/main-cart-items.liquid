@@ -241,6 +241,16 @@
                               </button>
                             {%- endif -%}
                             <quantity-input class="quantity cart-quantity">
+{%- if item.quantity == 1 -%}
+                              <button class="quantity__button" name="remove" type="button">
+                                <span class="visually-hidden">
+                                  {{- 'products.product.remove' | t: product: item.product.title | escape -}}
+                                </span>
+                                <span class="svg-wrapper">
+                                  {{- 'icon-remove.svg' | inline_asset_content -}}
+                                </span>
+                              </button>
+                            {%- else -%}
                               <button class="quantity__button" name="minus" type="button">
                                 <span class="visually-hidden">
                                   {{- 'products.product.quantity.decrease' | t: product: item.product.title | escape -}}
@@ -249,6 +259,7 @@
                                   {{- 'icon-minus.svg' | inline_asset_content -}}
                                 </span>
                               </button>
+                            {%- endif -%}
                               <input
                                 class="quantity__input"
                                 data-quantity-variant-id="{{ item.variant.id }}"

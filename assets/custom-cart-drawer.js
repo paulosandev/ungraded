@@ -1,13 +1,98 @@
-// Mejorar la funcionalidad del cart drawer personalizado
+// Sistema de carrito dinámico - Versión compatible con unified cart
 
-// Check if unified cart system is active - if so, disable this script
-if (window.UNIFIED_CART_ACTIVE) {
-  console.log('🚫 Custom cart drawer disabled - unified system active');
-  // Export empty objects to prevent errors
-  window.cartCounterManager = { updateCounter: () => {}, forceUpdate: () => {} };
+console.log('🚀 Iniciando sistema de carrito dinámico compatible');
+
+// Detectar si el sistema unificado está activo
+if (window.UNIFIED_CART_ACTIVE || document.querySelector('.unified-cart-active') || window.location.href.includes('ungraded-dev')) {
+  console.log('🚫 Sistema unificado detectado - deshabilitando custom cart drawer completamente');
+  
+  // Versión mínima solo para compatibilidad - sin interceptors
+  window.cartCounterManager = {
+    updateCounter: () => {
+      // No hacer nada - dejar que el sistema unificado maneje todo
+      console.log('⏸️ Custom cart counter disabled - unified system active');
+    },
+    forceUpdate: function() { 
+      // No hacer nada
+    }
+  };
+  
   window.cartDesignPreserver = { ensureCustomDesign: () => {} };
   window.productStockValidator = { validateProductStock: () => true };
-  window.cartDrawerEnhancer = { enhance: () => {}, clearCartErrors: () => {}, enhanceQuantityInputs: () => {} };
+  window.cartDrawerEnhancer = { 
+    enhance: () => {}, 
+    clearCartErrors: () => {}, 
+    enhanceQuantityInputs: () => {} 
+  };
+  
+  // Funcionalidad básica del icono del bote de basura para el sistema unificado
+  const initTrashIconForUnifiedSystem = () => {
+    const updateMinusIcons = () => {
+      const cartDrawer = document.querySelector('cart-drawer');
+      if (!cartDrawer) return;
+      
+      const quantityInputs = cartDrawer.querySelectorAll('quantity-input');
+      
+      quantityInputs.forEach(quantityInput => {
+        const input = quantityInput.querySelector('input[name="updates[]"]');
+        const minusButton = quantityInput.querySelector('button[name="minus"]');
+        
+        if (!input || !minusButton) return;
+        
+        let svgWrapper = minusButton.querySelector('.svg-wrapper');
+        if (!svgWrapper) {
+          svgWrapper = document.createElement('span');
+          svgWrapper.classList.add('svg-wrapper');
+          minusButton.appendChild(svgWrapper);
+        }
+        if (!svgWrapper) return;
+        
+        const currentValue = parseInt(input.value) || 0;
+        const svgMinus = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>';
+        const svgTrash = '<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-remove" viewBox="0 0 16 16"><path fill="currentColor" d="M14 3h-3.53a3.07 3.07 0 0 0-.6-1.65C9.44.82 8.8.5 8 .5s-1.44.32-1.87.85A3.06 3.06 0 0 0 5.53 3H2a.5.5 0 0 0 0 1h1.25v10c0 .28.22.5.5.5h8.5a.5.5 0 0 0 .5-.5V4H14a.5.5 0 0 0 0-1M6.91 1.98c.23-.29.58-.48 1.09-.48s.85.19 1.09.48c.2.24.3.6.36 1.02h-2.9c.05-.42.17-.78.36-1.02m4.84 11.52h-7.5V4h7.5z"/><path fill="currentColor" d="M6.55 5.25a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 1 0v-6a.5.5 0 0 0-.5-.5m2.9 0a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 1 0v-6a.5.5 0 0 0-.5-.5"/></svg>';
+        
+        svgWrapper.innerHTML = currentValue === 1 ? svgTrash : svgMinus;
+      });
+    };
+    
+    // Actualizar iconos cuando se carga la página
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateMinusIcons);
+    } else {
+      updateMinusIcons();
+    }
+    
+    // Observar cambios en el carrito para actualizar iconos
+    const observer = new MutationObserver(() => {
+      updateMinusIcons();
+    });
+    
+    const cartDrawer = document.querySelector('cart-drawer');
+    if (cartDrawer) {
+      observer.observe(cartDrawer, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['value']
+      });
+    }
+    
+    // También escuchar eventos de cambio en inputs
+    document.addEventListener('change', (e) => {
+      if (e.target.matches('cart-drawer input[name="updates[]"]')) {
+        setTimeout(updateMinusIcons, 50);
+      }
+    });
+    
+    console.log('🗑️ Trash icon functionality enabled for unified system');
+  };
+  
+  // Inicializar la funcionalidad del icono de basura
+  initTrashIconForUnifiedSystem();
+  
+  // Evitar que se ejecute el resto del código
+  console.log('🛑 Custom cart drawer system disabled completely');
+  
 } else {
 
 // Clase para manejar el contador del carrito de forma robusta
@@ -30,45 +115,66 @@ class CartCounterManager {
   }
 
   subscribeToCartEvents() {
+    console.log('📡 Configurando eventos del carrito dinámico');
+    
     // Eventos del sistema PUB/SUB de Shopify
     if (window.subscribe && window.PUB_SUB_EVENTS) {
-      window.subscribe(PUB_SUB_EVENTS.cartUpdate, () => {
+      window.subscribe(PUB_SUB_EVENTS.cartUpdate, (data) => {
+        console.log('🔄 PUB/SUB cartUpdate recibido:', data);
         this.updateCounter();
+        // También actualizar el drawer si está abierto
+        this.updateCartDrawerIfOpen(data);
       });
     }
 
     // Eventos personalizados del carrito
-    document.addEventListener('cart:update', () => this.updateCounter());
-    document.addEventListener('cart:add', () => this.updateCounter());
-    document.addEventListener('cart:remove', () => this.updateCounter());
-    document.addEventListener('cart:clear', () => this.updateCounter());
-    document.addEventListener('cart:change', () => this.updateCounter());
+    const cartEvents = ['cart:update', 'cart:add', 'cart:remove', 'cart:clear', 'cart:change'];
+    cartEvents.forEach(event => {
+      document.addEventListener(event, (e) => {
+        console.log(`🎯 Evento ${event} detectado:`, e.detail);
+        this.updateCounter();
+      });
+    });
 
-    // Interceptar formularios de quantity updates
+    // Interceptar TODAS las actualizaciones de carrito
+    this.interceptCartRequests();
+
+    // Interceptar formularios de quantity updates con mejor detección
     document.addEventListener('submit', (e) => {
-      if (e.target.matches('form[action*="/cart/change"]') || 
-          e.target.matches('form[action*="/cart/update"]')) {
-        // Actualizar después de un breve delay para permitir que el servidor procese
+      const form = e.target;
+      if (this.isCartForm(form)) {
+        console.log('📝 Formulario de carrito enviado:', form);
+        // Actualizar inmediatamente y después del procesamiento
+        this.updateCounter();
+        setTimeout(() => this.updateCounter(), 300);
+        setTimeout(() => this.updateCounter(), 800); // Backup
+      }
+    });
+
+    // Monitorear cambios en inputs de cantidad con mejor detección
+    document.addEventListener('change', (e) => {
+      if (this.isQuantityInput(e.target)) {
+        console.log('🔢 Input de cantidad cambiado:', e.target.value);
+        this.updateCounter();
         setTimeout(() => this.updateCounter(), 200);
       }
     });
 
-    // Monitorear cambios en inputs de cantidad
-    document.addEventListener('change', (e) => {
-      if (e.target.matches('input[name="updates[]"]') || 
-          e.target.matches('input[data-quantity-variant-id]')) {
+    // Monitorear clicks en botones de quantity con mejor detección
+    document.addEventListener('click', (e) => {
+      if (this.isQuantityButton(e.target)) {
+        console.log('🔘 Botón de cantidad presionado:', e.target);
+        this.updateCounter();
         setTimeout(() => this.updateCounter(), 100);
+        setTimeout(() => this.updateCounter(), 500); // Backup
       }
     });
 
-    // Monitorear clicks en botones de quantity
-    document.addEventListener('click', (e) => {
-      if (e.target.matches('button[name="plus"]') || 
-          e.target.matches('button[name="minus"]') ||
-          e.target.closest('.quantity__button')) {
-        setTimeout(() => this.updateCounter(), 100);
-      }
-    });
+    // Interceptar llamadas fetch a cart endpoints
+    this.interceptFetchRequests();
+
+    // Observar cambios en el DOM del carrito
+    this.observeCartDOMChanges();
   }
 
   updateCounter() {
@@ -79,11 +185,28 @@ class CartCounterManager {
     }
 
     this.isUpdating = true;
-
-    fetch('/cart.js')
-      .then(response => response.json())
-      .then(cart => {
+    // Comprobación: evitar actualización innecesaria
+    const currentCount = this.lastKnownCount || 0;
+    fetch('/cart.js', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(cart => {
+      const itemCount = cart.item_count || 0;
+      if (itemCount !== currentCount) {
+        console.log('🔄 Actualizando contador del carrito...');
+        console.log('✅ Datos del carrito obtenidos:', cart);
         this.updateAllCounterElements(cart);
+        this.updateCartDrawerContent(cart);
         this.isUpdating = false;
         
         // Procesar queue si hay actualizaciones pendientes
@@ -91,68 +214,109 @@ class CartCounterManager {
           this.updateQueue = [];
           setTimeout(() => this.updateCounter(), 50);
         }
-      })
+      }
+    })
       .catch(error => {
-        console.error('Error actualizando contador del carrito:', error);
+        console.error('❌ Error actualizando contador del carrito:', error);
         this.isUpdating = false;
         
-        // Reintentar después de un error
-        setTimeout(() => this.updateCounter(), 500);
+        // Reintentar después de un error con backoff exponencial
+        const retryDelay = Math.min(1000 * Math.pow(2, this.retryCount || 0), 5000);
+        this.retryCount = (this.retryCount || 0) + 1;
+        setTimeout(() => {
+          this.updateCounter();
+          this.retryCount = 0; // Reset retry count on successful retry
+        }, retryDelay);
       });
   }
 
   updateAllCounterElements(cart) {
     const itemCount = cart.item_count || 0;
+    const previousCount = this.lastKnownCount || 0;
     
-    // Actualizar todos los elementos del contador
+    console.log(`🔢 Actualizando contador: ${previousCount} → ${itemCount}`);
+    
+    // Actualizar todos los elementos del contador con selectors más amplios
     const counterSelectors = [
       '#cart-count',
       '.cart-count-bubble span[aria-hidden]',
       '.cart-count-bubble span:not(.visually-hidden)',
-      '[data-cart-count]'
+      '.cart-count-bubble .cart-count',
+      '[data-cart-count]',
+      '.cart-counter',
+      '.header__icon--cart .cart-count',
+      'cart-icon-bubble span',
+      '.shopify-section--header .cart-count'
     ];
 
+    let elementsUpdated = 0;
     counterSelectors.forEach(selector => {
       const elements = document.querySelectorAll(selector);
       elements.forEach(element => {
         if (element && element.textContent !== itemCount.toString()) {
           element.textContent = itemCount;
+          element.setAttribute('data-cart-count', itemCount);
+          elementsUpdated++;
         }
       });
     });
+    
+    console.log(`📊 Elementos de contador actualizados: ${elementsUpdated}`);
 
-    // Actualizar visibilidad de las burbujas del contador
+    // Actualizar visibilidad de las burbujas del contador con animación
     const bubbles = document.querySelectorAll('.cart-count-bubble');
     bubbles.forEach(bubble => {
       if (itemCount > 0) {
         bubble.style.display = 'flex';
         bubble.style.visibility = 'visible';
         bubble.style.opacity = '1';
+        bubble.classList.remove('hidden');
+        
+        // Animación cuando cambia la cantidad
+        if (itemCount !== previousCount) {
+          bubble.classList.add('updated');
+          setTimeout(() => bubble.classList.remove('updated'), 600);
+        }
       } else {
         bubble.style.display = 'none';
         bubble.style.visibility = 'hidden';
         bubble.style.opacity = '0';
+        bubble.classList.add('hidden');
       }
     });
 
     // Actualizar iconos del carrito (lleno vs vacío)
-    const cartIcons = document.querySelectorAll('.cart-icon-btn, .header__icon--cart');
+    const cartIcons = document.querySelectorAll('.cart-icon-btn, .header__icon--cart, [data-cart-icon]');
     cartIcons.forEach(icon => {
-      const svgWrapper = icon.querySelector('.svg-wrapper');
-      if (svgWrapper) {
-        if (itemCount > 0) {
-          icon.classList.add('has-items');
-        } else {
-          icon.classList.remove('has-items');
-        }
+      if (itemCount > 0) {
+        icon.classList.add('has-items');
+        icon.setAttribute('data-cart-items', itemCount);
+      } else {
+        icon.classList.remove('has-items');
+        icon.removeAttribute('data-cart-items');
       }
     });
 
+    // Actualizar el estado del cart drawer
+    const cartDrawer = document.querySelector('cart-drawer');
+    if (cartDrawer) {
+      if (itemCount === 0) {
+        cartDrawer.classList.add('is-empty');
+      } else {
+        cartDrawer.classList.remove('is-empty');
+      }
+    }
+
+    // Guardar el último count conocido
+    this.lastKnownCount = itemCount;
+
     // Disparar evento personalizado para otros scripts
     const updateEvent = new CustomEvent('cart:counter-updated', {
-      detail: { itemCount: itemCount, cart: cart }
+      detail: { itemCount: itemCount, previousCount: previousCount, cart: cart }
     });
     document.dispatchEvent(updateEvent);
+    
+    console.log('✅ Contador actualizado correctamente');
   }
 
   startPeriodicCheck() {
@@ -164,6 +328,198 @@ class CartCounterManager {
     }, 10000);
   }
 
+  // Métodos auxiliares para detección de elementos del carrito
+  isCartForm(form) {
+    if (!form || form.tagName !== 'FORM') return false;
+    
+    return form.matches('form[action*="/cart/change"]') || 
+           form.matches('form[action*="/cart/update"]') ||
+           form.matches('form[action*="/cart/add"]') ||
+           form.closest('cart-drawer') ||
+           form.closest('cart-items') ||
+           form.querySelector('input[name="updates[]"]');
+  }
+  
+  isQuantityInput(input) {
+    if (!input || input.tagName !== 'INPUT') return false;
+    
+    return input.matches('input[name="updates[]"]') || 
+           input.matches('input[data-quantity-variant-id]') ||
+           input.matches('input[name="quantity"]') ||
+           input.closest('quantity-input') ||
+           input.hasAttribute('data-index');
+  }
+  
+  isQuantityButton(element) {
+    if (!element) return false;
+    
+    const button = element.closest('button');
+    if (!button) return false;
+    
+    return button.matches('button[name="plus"]') || 
+           button.matches('button[name="minus"]') ||
+           button.closest('.quantity__button') ||
+           button.closest('quantity-input') ||
+           button.matches('.quantity-btn');
+  }
+  
+  // Interceptar requests a endpoints del carrito
+  interceptCartRequests() {
+    console.log('🕵️ Configurando interceptors para requests del carrito');
+    
+    // Interceptar XMLHttpRequest
+    const self = this;
+    const originalXhrSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function(data) {
+      if (this._url && self.isCartRequest(this._url)) {
+        console.log('📡 XHR Cart request intercepted:', this._url);
+        this.addEventListener('load', () => {
+          if (window.cartCounterManager) {
+            setTimeout(() => window.cartCounterManager.updateCounter(), 100);
+          }
+        });
+      }
+      return originalXhrSend.call(this, data);
+    };
+    
+    const originalXhrOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url) {
+      this._url = url;
+      return originalXhrOpen.apply(this, arguments);
+    };
+  }
+  
+  interceptFetchRequests() {
+    console.log('🌐 Configurando interceptors para fetch requests');
+    
+    const self = this;
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+      const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+      
+      if (url && self.isCartRequest(url)) {
+        console.log('📡 Fetch Cart request intercepted:', url);
+        return originalFetch.apply(this, args).then(response => {
+          // Actualizar contador después de requests exitosos
+          if (response.ok && window.cartCounterManager) {
+            setTimeout(() => window.cartCounterManager.updateCounter(), 100);
+          }
+          return response;
+        });
+      }
+      
+      return originalFetch.apply(this, args);
+    };
+  }
+  
+  isCartRequest(url) {
+    if (!url) return false;
+    return url.includes('/cart/') || 
+           url.includes('cart.js') || 
+           url.includes('cart_add') ||
+           url.includes('cart_change') ||
+           url.includes('cart_update');
+  }
+  
+  // Observar cambios en el DOM del carrito
+  observeCartDOMChanges() {
+    console.log('👁️ Configurando observer para cambios en el DOM del carrito');
+    
+    let lastUpdateTime = 0;
+    const UPDATE_THROTTLE = 1000; // 1 second minimum between updates
+
+    const observer = new MutationObserver((mutations) => {
+      const now = Date.now();
+
+      if (now - lastUpdateTime < UPDATE_THROTTLE) {
+        return;
+      }
+
+      let shouldUpdate = false;
+
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              if (node.matches && (node.matches('.cart-item'))) {
+                shouldUpdate = true;
+              }
+            }
+          });
+
+          mutation.removedNodes.forEach(node => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              if (node.matches && (node.matches('.cart-item'))) {
+                shouldUpdate = true;
+              }
+            }
+          });
+        }
+
+        if (mutation.type === 'attributes') {
+          const target = mutation.target;
+          if (target.matches && (target.matches('input[name="updates[]"]'))) {
+            shouldUpdate = true;
+          }
+        }
+      });
+
+      if (shouldUpdate) {
+        console.log('🔄 DOM changes detected, updating counter');
+        lastUpdateTime = now;
+        setTimeout(() => this.updateCounter(), 100);
+      }
+    });
+    
+    // Observar el documento completo para cambios en elementos del carrito
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['value', 'data-cart-count', 'class']
+    });
+  }
+  
+  // Actualizar contenido del drawer si está abierto
+  updateCartDrawerIfOpen(data) {
+    const cartDrawer = document.querySelector('cart-drawer');
+    if (cartDrawer && cartDrawer.classList.contains('active')) {
+      console.log('🛒 Cart drawer is open, updating content');
+      // Forzar actualización del contenido del drawer
+      setTimeout(() => {
+        if (window.cartDrawerEnhancer) {
+          window.cartDrawerEnhancer.enhance();
+        }
+      }, 200);
+    }
+  }
+  
+  // Actualizar contenido del cart drawer
+  updateCartDrawerContent(cart) {
+    const cartDrawer = document.querySelector('cart-drawer');
+    if (!cartDrawer) return;
+    
+    // Actualizar subtotal si existe
+    const subtotalElements = cartDrawer.querySelectorAll('.cart-subtotal, .cart-subtotal-amount, [data-cart-subtotal]');
+    subtotalElements.forEach(element => {
+      if (cart.total_price !== undefined) {
+        const formattedPrice = this.formatMoney(cart.total_price);
+        if (element.textContent !== formattedPrice) {
+          element.textContent = formattedPrice;
+        }
+      }
+    });
+  }
+  
+  // Helper para formatear precios
+  formatMoney(cents) {
+    if (window.Shopify && window.Shopify.formatMoney) {
+      return window.Shopify.formatMoney(cents);
+    }
+    // Fallback simple
+    return '$' + (cents / 100).toFixed(2);
+  }
+  
   // Método para forzar actualización inmediata
   forceUpdate() {
     this.isUpdating = false;
@@ -466,8 +822,8 @@ class CartDrawerEnhancer {
       const minusButton = quantityInput.querySelector('button[name="minus"]');
 
       // SVGs para los iconos
-      const svgMinus = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5 11V13H19V11H5Z"></path></svg>';
-      const svgTrash = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M14 3h-3.53a3.07 3.07 0 0 0-.6-1.65C9.44.82 8.8.5 8 .5s-1.44.32-1.87.85A3.06 3.06 0 0 0 5.53 3H2a.5.5 0 0 0 0 1h1.25v10c0 .28.22.5.5.5h8.5a.5.5 0 0 0 .5-.5V4H14a.5.5 0 0 0 0-1M6.91 1.98c.23-.29.58-.48 1.09-.48s.85.19 1.09.48c.2.24.3.6.36 1.02h-2.9c.05-.42.17-.78.36-1.02m4.84 11.52h-7.5V4h7.5z"/><path d="M6.55 5.25a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 1 0v-6a.5.5 0 0 0-.5-.5m2.9 0a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 1 0v-6a.5.5 0 0 0-.5-.5"/></svg>';
+      const svgMinus = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>';
+      const svgTrash = '<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-remove" viewBox="0 0 16 16"><path fill="currentColor" d="M14 3h-3.53a3.07 3.07 0 0 0-.6-1.65C9.44.82 8.8.5 8 .5s-1.44.32-1.87.85A3.06 3.06 0 0 0 5.53 3H2a.5.5 0 0 0 0 1h1.25v10c0 .28.22.5.5.5h8.5a.5.5 0 0 0 .5-.5V4H14a.5.5 0 0 0 0-1M6.91 1.98c.23-.29.58-.48 1.09-.48s.85.19 1.09.48c.2.24.3.6.36 1.02h-2.9c.05-.42.17-.78.36-1.02m4.84 11.52h-7.5V4h7.5z"/><path fill="currentColor" d="M6.55 5.25a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 1 0v-6a.5.5 0 0 0-.5-.5m2.9 0a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 1 0v-6a.5.5 0 0 0-.5-.5"/></svg>';
 
       // Cambiar el icono del botón minus cuando la cantidad es 1
       const updateMinusIcon = () => {
