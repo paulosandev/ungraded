@@ -519,14 +519,50 @@ cart-drawer .quantity-input:focus {
 cart-drawer .cart-drawer__empty-content {
   text-align: center;
   padding: 60px 20px;
-  background-color: #ffffff;
-  border-radius: 20px;
-  margin: 20px;
-  min-height: calc(100vh - 40px);
+  background-color: transparent;
+  border-radius: 12px;
+  margin: 0;
+  min-height: calc(100vh - 200px);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 3;
+}
+
+/* Overlay blanco para carrito vacío - Superpone todo el fondo */
+cart-drawer .cart-drawer__empty-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  z-index: 1;
+  border-radius: 15px;
+  margin: 10px;
+  border: 3px solid #000000;
+}
+
+/* Asegurar fondo blanco cuando el carrito está vacío */
+cart-drawer.is-empty .drawer__inner {
+  background-color: #ffffff !important;
+  border: 3px solid #000000;
+  border-radius: 15px;
+  position: relative;
+}
+
+cart-drawer.is-empty .drawer__contents {
+  background-color: transparent !important;
+  border-radius: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Ocultar header cuando está vacío */
+cart-drawer.is-empty .drawer__header {
+  display: none;
 }
 
 cart-drawer .empty-cart-icon {
