@@ -70,6 +70,20 @@
         {%- endif -%}
       </div>
       
+      {% comment %} Contenido del carrito vacío - NIVEL SUPERIOR {% endcomment %}
+      {%- if cart == empty -%}
+        <div class="cart-drawer__empty-content">
+          <div class="empty-cart-icon">
+            🛒
+          </div>
+          <h2 class="empty-cart-title tanker-font">CARRITO VACÍO</h2>
+          <p class="empty-cart-message">Añade algunos productos para comenzar a comprar</p>
+          <a href="{{ routes.all_products_collection_url }}" class="continue-shopping-btn">
+            CONTINUAR COMPRANDO
+          </a>
+        </div>
+      {%- endif -%}
+      
       <cart-drawer-items
         {% if cart == empty %}
           class=" is-empty"
@@ -166,19 +180,6 @@
                     
                   </div>
                 {%- endfor -%}
-              </div>
-            {%- else -%}
-              {% comment %} Contenido del carrito vacío con overlay blanco {% endcomment %}
-              <div class="cart-drawer__empty-overlay"></div>
-              <div class="cart-drawer__empty-content">
-                <div class="empty-cart-icon">
-                  🛒
-                </div>
-                <h2 class="empty-cart-title tanker-font">CARRITO VACÍO</h2>
-                <p class="empty-cart-message">Añade algunos productos para comenzar a comprar</p>
-                <a href="{{ routes.all_products_collection_url }}" class="continue-shopping-btn">
-                  CONTINUAR COMPRANDO
-                </a>
               </div>
             {%- endif -%}
           </div>
